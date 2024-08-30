@@ -1,0 +1,13 @@
+/** @format */
+/**
+ * Simple Message file for showing on the website
+ * When need to show successful message failed message we can take messages from this file.
+ */
+
+const messages = {
+    connectionCreated: "Database connection established",
+    connectionFailed: "Database connection failed",
+    serverRunningString: "⚡️[server]: Server is running ",
+};
+
+export { messages };

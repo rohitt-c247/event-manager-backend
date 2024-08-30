@@ -1,0 +1,1 @@
+export { default as memberController } from './memberController.js';
