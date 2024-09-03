@@ -10,10 +10,21 @@ const statusCodeConstant = {
 }
 const messageConstant = {
     MEMBER: "Member",
-    DEPARTMENT: "Department"
+    DEPARTMENT: "Department",
+    EVENT: "Event"
+}
+const paginationConstants = {
+    ITEM_LIMIT: 2,
+    DEFAULT_PAGE: 0
+}
+
+const sortingConstant = {
+    ASC: "asc"
 }
 
 export {
     statusCodeConstant,
-    messageConstant
+    messageConstant,
+    paginationConstants,
+    sortingConstant
 }

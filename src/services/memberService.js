@@ -5,8 +5,9 @@ const client = new OAuth2Client();
 import { FRONT_APP_URL, FRONT_END_GOOGLE_CALLBACK, GOOGLE_CLIENT_ID, GOOGLE_SECRET_ID, ORGANIZATION_DOMAIN } from "../config/envConfig.js";
 import memberModel from "../models/memberModel.js";
 import { messages } from "../common/messages.js";
-import { messageConstant, statusCodeConstant } from "../common/constant.js";
+import { messageConstant, sortingConstant, statusCodeConstant } from "../common/constant.js";
 import { errorHandler } from "../common/errorHandler.js";
+import { getPagination, getPagingData } from "../helpers/paginationHelper.js";
 /**
  * This service is use for to verify the member login
  * @param {*} auth 
@@ -85,9 +86,23 @@ const addTeamMembers = async (memberBody) => {
  * This api is use for to get list members
  * @returns 
  */
-const getMembers = async () => {
+const getMembers = async (_limit, _page, sortBy, sortOrder) => {
     try {
-        const getMembers = await memberModel.find({ isLoginAccess: true }, { name: 1, email: 1, position: 1, department: 1, experience: 1, isLoginAccess: 1 })
+        const { limit, offset } = getPagination(_page, _limit);
+        /**
+         * Manage sorting and pagination
+         */
+        let sort = {};
+        if (sortBy && sortOrder) {
+            sort[sortBy] = sortOrder === sortingConstant.ASC ? 1 : -1;
+        } else {
+            // Default sorting if no sortBy and sortOrder provided
+            sort = { createdAt: 1 };
+        }
+        const totalItems = await memberModel.countDocuments({ isLoginAccess: true }) // get the total counts od members
+        const getMembers = await memberModel.find({ isLoginAccess: true }, { name: 1, email: 1, position: 1, department: 1, experience: 1, isLoginAccess: 1 }).skip(offset)
+            .limit(limit).sort(sort)
+
         if (getMembers.length === 0) {
             return {
                 message: messages.itemListNotFound.replace("Item", messageConstant.MEMBER),
@@ -95,9 +110,17 @@ const getMembers = async () => {
                 status: statusCodeConstant.NOT_FOUND
             }
         }
+        const { items, totalPages } = getPagingData(
+            getMembers,
+            _page,
+            limit,
+            totalItems
+        );
         return {
             message: messages.fetListSuccess.replace("Item", messageConstant.MEMBER),
-            data: getMembers,
+            data: items,
+            totalPages,
+            totalItems,
             status: statusCodeConstant.OK
         }
     }
