@@ -17,6 +17,6 @@ const memberSchema = new Schema(
 * Creating index to the columns
 * With these columns we will implement the search and find functions
  **/
-memberSchema.index({ userId: 1 });
-memberSchema.index({ status: 1 });
+memberSchema.index({ email: 1 });
+memberSchema.index({ name: 1 });
 export default model("members", memberSchema)
