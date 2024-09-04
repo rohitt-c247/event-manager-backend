@@ -26,7 +26,114 @@ const createEvent = async (eventBody) => {
         throw errorHandler(error);
     }
 };
+/**
+ * THis api use for to get the list of an event
+ * @returns 
+ */
+const listOfAnEvent = async () => {
+    try {
+        console.log("calling list api")
+        const getEventList = await eventModel.find({}, { name: 1, date: 1 })
+        console.log("getEventList", getEventList)
+        if (getEventList.length === 0) {
+            return {
+                message: messages.itemListNotFound.replace("Item", "Event"),
+                data: [],
+                status: statusCodeConstant.NOT_FOUND
+            }
+        }
+        return {
+            message: messages.itemFetchSuccess.replace("Item", "Event"),
+            data: getEventList,
+            status: statusCodeConstant.OK
+        }
+    }
+    catch (error) {
+        throw errorHandler(error);
+    }
+}
+/**
+ * This api use for to get event by id
+ * @param {*} eventId 
+ * @returns 
+ */
+const getEventById = async (eventId) => {
+    try {
+        const getEvent = await eventModel.findOne({ _id: eventId }, { name: 1, date: 1 })
+        if (getEvent === null || getEvent === undefined) {
+            return {
+                message: messages.itemListNotFound.replace("Item list", "Event"),
+                data: [],
+                status: statusCodeConstant.NOT_FOUND
+            }
+        }
+        return {
+            message: messages.itemFetchSuccess.replace("Item", "Event"),
+            data: getEvent,
+            status: statusCodeConstant.OK
+        }
+    }
+    catch (error) {
+        throw errorHandler(error);
+    }
+}
+/**
+ * This service is use for to delete the event 
+ * @param {*} eventId 
+ * @returns 
+ */
+const deleteAnEvent = async (eventId) => {
+    try {
+        console.log("calling delete", eventId)
+        const getEvent = await eventModel.findOne({ _id: eventId })
+        if (getEvent === null || getEvent === undefined) {
+            return {
+                message: messages.itemListNotFound.replace("Item list", messageConstant.EVENT),
+                status: statusCodeConstant.NOT_FOUND
+            }
+        }
+        // Delete an event
+        await eventModel.findOneAndDelete({ _id: eventId })
+        return {
+            message: messages.itemDeletedSuccess.replace("Item", messageConstant.EVENT),
+            status: statusCodeConstant.OK
+        }
+    }
+    catch (error) {
+        throw errorHandler(error);
+    }
+}
+/**
+ * This service use for to update the event
+ * @param {*} eventId 
+ * @param {*} eventBody 
+ * @returns 
+ */
+const updateAnEvent = async (eventId, eventBody) => {
+    try {
+        const { name, description, date, numberOfGroup } = eventBody
+        const findEvent = await eventModel.findOne({ _id: eventId })
+        if (findEvent === null || findEvent === undefined) {
+            return {
+                message: messages.itemListNotFound.replace("Item list", messageConstant.EVENT),
+                status: statusCodeConstant.NOT_FOUND
+            }
+        }
+        await eventModel.findOneAndUpdate({ _id: eventId }, { $set: { name, description, date, numberOfGroup } })
+        return {
+            message: messages.itemUpdatedSuccess.replace("Item", messageConstant.EVENT),
+            status: statusCodeConstant.OK
+        }
+    }
+    catch (error) {
+        throw errorHandler(error);
+    }
+}
 
 export default {
-    createEvent
+    createEvent,
+    listOfAnEvent,
+    getEventById,
+    deleteAnEvent,
+    updateAnEvent
 }

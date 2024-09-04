@@ -7,6 +7,7 @@ const statusCodeConstant = {
     CREATED: 201,
     NOT_FOUND: 404,
     FORBIDDEN: 403,
+    UNPROCESSABLE_ENTITY: 422
 }
 const messageConstant = {
     MEMBER: "Member",
@@ -26,5 +27,5 @@ export {
     statusCodeConstant,
     messageConstant,
     paginationConstants,
-    sortingConstant
+    sortingConstant,
 }
