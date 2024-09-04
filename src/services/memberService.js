@@ -100,7 +100,7 @@ const getMembers = async (_limit, _page, sortBy, sortOrder) => {
             sort = { createdAt: 1 };
         }
         const totalItems = await memberModel.countDocuments() // get the total counts od members
-        const getMembers = await memberModel.find({ name: 1, email: 1, position: 1, department: 1, experience: 1, isLoginAccess: 1 }).skip(offset)
+        const getMembers = await memberModel.find({}, { name: 1, email: 1, position: 1, department: 1, experience: 1, isLoginAccess: 1 }).skip(offset)
             .limit(limit).sort(sort)
 
         if (getMembers.length === 0) {
