@@ -15,7 +15,7 @@ const messageConstant = {
     EVENT: "Event"
 }
 const paginationConstants = {
-    ITEM_LIMIT: 2,
+    ITEM_LIMIT: 100,
     DEFAULT_PAGE: 0
 }
 
