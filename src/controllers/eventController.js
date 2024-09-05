@@ -21,7 +21,8 @@ const createEvent = async (req, res) => {
  */
 const listOfAnEvent = async (req, res) => {
     try {
-        const { message, status, data } = await eventService.listOfAnEvent()
+        const { search } = req.query
+        const { message, status, data } = await eventService.listOfAnEvent(search)
         res.status(status ? status : statusCodeConstant.OK).json({ message, status, data })
     } catch (error) {
         console.log("calling error", error)

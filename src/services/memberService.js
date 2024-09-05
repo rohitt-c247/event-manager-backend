@@ -86,13 +86,17 @@ const addTeamMembers = async (memberBody) => {
  * This api is use for to get list members
  * @returns 
  */
-const getMembers = async (_limit, _page, sortBy, sortOrder) => {
+const getMembers = async (_limit, _page, sortBy, sortOrder, search) => {
     try {
         const { limit, offset } = getPagination(_page, _limit);
         /**
          * Manage sorting and pagination
          */
         let sort = {};
+        const filter = {};
+        if (search) {
+            filter["name"] = { $regex: search, $options: "i" };
+        }
         if (sortBy && sortOrder) {
             sort[sortBy] = sortOrder === sortingConstant.ASC ? 1 : -1;
         } else {
@@ -100,7 +104,7 @@ const getMembers = async (_limit, _page, sortBy, sortOrder) => {
             sort = { createdAt: 1 };
         }
         const totalItems = await memberModel.countDocuments() // get the total counts od members
-        const getMembers = await memberModel.find({}, { name: 1, email: 1, position: 1, department: 1, experience: 1, isLoginAccess: 1 }).skip(offset)
+        const getMembers = await memberModel.find(filter, { name: 1, email: 1, position: 1, department: 1, experience: 1, isLoginAccess: 1 }).skip(offset)
             .limit(limit).sort(sort)
 
         if (getMembers.length === 0) {
@@ -135,7 +139,7 @@ const getMembers = async (_limit, _page, sortBy, sortOrder) => {
  */
 const getMemberById = async (memberId) => {
     try {
-        const getMember = await memberModel.findOne({ _id: memberId }, { name: 1, email: 1, department: 1, position: 1, experience: 1 })
+        const getMember = await memberModel.findOne({ _id: memberId }, { name: 1, email: 1, department: 1, position: 1, experience: 1, isLoginAccess: 1 })
         if (getMember === null || getMember === undefined) {
             return {
                 message: messages.itemListNotFound.replace("Item list", messageConstant.MEMBER),

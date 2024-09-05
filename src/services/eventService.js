@@ -30,10 +30,13 @@ const createEvent = async (eventBody) => {
  * THis api use for to get the list of an event
  * @returns 
  */
-const listOfAnEvent = async () => {
+const listOfAnEvent = async (search) => {
     try {
-        console.log("calling list api")
-        const getEventList = await eventModel.find({}, { name: 1, date: 1 })
+        const filter = {};
+        if (search) {
+            filter["name"] = { $regex: search, $options: "i" };
+        }
+        const getEventList = await eventModel.find(filter, { name: 1, date: 1 })
         console.log("getEventList", getEventList)
         if (getEventList.length === 0) {
             return {
