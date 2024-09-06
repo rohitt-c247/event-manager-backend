@@ -1,0 +1,1 @@
+export { default as memberValidator } from './memberValidator.js';

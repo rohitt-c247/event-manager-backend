@@ -16,7 +16,8 @@ const messages = {
     itemListNotFound: "Item list not found!",
     itemFetchSuccess: "Item fetch successfully!",
     itemUpdatedSuccess: "Item updated successfully!",
-    itemDeletedSuccess: "Item deleted successfully!"
+    itemDeletedSuccess: "Item deleted successfully!",
+    invalidRequest: "Invalid request!"
 };
 
 export { messages };

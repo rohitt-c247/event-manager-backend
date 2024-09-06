@@ -5,8 +5,9 @@ const client = new OAuth2Client();
 import { FRONT_APP_URL, FRONT_END_GOOGLE_CALLBACK, GOOGLE_CLIENT_ID, GOOGLE_SECRET_ID, ORGANIZATION_DOMAIN } from "../config/envConfig.js";
 import memberModel from "../models/memberModel.js";
 import { messages } from "../common/messages.js";
-import { messageConstant, statusCodeConstant } from "../common/constant.js";
+import { messageConstant, sortingConstant, statusCodeConstant } from "../common/constant.js";
 import { errorHandler } from "../common/errorHandler.js";
+import { getPagination, getPagingData } from "../helpers/paginationHelper.js";
 /**
  * This service is use for to verify the member login
  * @param {*} auth 
@@ -85,9 +86,27 @@ const addTeamMembers = async (memberBody) => {
  * This api is use for to get list members
  * @returns 
  */
-const getMembers = async () => {
+const getMembers = async (_limit, _page, sortBy, sortOrder, search) => {
     try {
-        const getMembers = await memberModel.find({ isLoginAccess: true }, { name: 1, email: 1, position: 1, department: 1, experience: 1, isLoginAccess: 1 })
+        const { limit, offset } = getPagination(_page, _limit);
+        /**
+         * Manage sorting and pagination
+         */
+        let sort = {};
+        const filter = {};
+        if (search) {
+            filter["name"] = { $regex: search, $options: "i" };
+        }
+        if (sortBy && sortOrder) {
+            sort[sortBy] = sortOrder === sortingConstant.ASC ? 1 : -1;
+        } else {
+            // Default sorting if no sortBy and sortOrder provided
+            sort = { createdAt: 1 };
+        }
+        const totalItems = await memberModel.countDocuments() // get the total counts od members
+        const getMembers = await memberModel.find(filter, { name: 1, email: 1, position: 1, department: 1, experience: 1, isLoginAccess: 1 }).skip(offset)
+            .limit(limit).sort(sort)
+
         if (getMembers.length === 0) {
             return {
                 message: messages.itemListNotFound.replace("Item", messageConstant.MEMBER),
@@ -95,9 +114,17 @@ const getMembers = async () => {
                 status: statusCodeConstant.NOT_FOUND
             }
         }
+        const { items, totalPages } = getPagingData(
+            getMembers,
+            _page,
+            limit,
+            totalItems
+        );
         return {
             message: messages.fetListSuccess.replace("Item", messageConstant.MEMBER),
-            data: getMembers,
+            data: items,
+            totalPages,
+            totalItems,
             status: statusCodeConstant.OK
         }
     }
@@ -112,7 +139,7 @@ const getMembers = async () => {
  */
 const getMemberById = async (memberId) => {
     try {
-        const getMember = await memberModel.findOne({ _id: memberId }, { name: 1, email: 1, department: 1, position: 1, experience: 1 })
+        const getMember = await memberModel.findOne({ _id: memberId }, { name: 1, email: 1, department: 1, position: 1, experience: 1, isLoginAccess: 1 })
         if (getMember === null || getMember === undefined) {
             return {
                 message: messages.itemListNotFound.replace("Item list", messageConstant.MEMBER),
@@ -182,11 +209,134 @@ const deleteMember = async (memberId) => {
     }
 }
 
+// /**
+//  * This api for get authorized team members
+//  * @returns 
+//  */
+// const authMemberList = async (_limit, _page, sortBy, sortOrder, search) => {
+//     try {
+//         const { limit, offset } = getPagination(_page, _limit);
+//         /**
+//          * Manage sorting and pagination
+//          */
+//         let sort = {};
+//         const filter = {};
+//         if (search) {
+//             filter["name"] = { $regex: search, $options: "i" };
+//         }
+//         if (sortBy && sortOrder) {
+//             sort[sortBy] = sortOrder === sortingConstant.ASC ? 1 : -1;
+//         } else {
+//             // Default sorting if no sortBy and sortOrder provided
+//             sort = { createdAt: 1 };
+//         }
+//         const totalItems = await memberModel.countDocuments() // get the total counts od members
+//         const getMembers = await memberModel.find(filter, { name: 1, email: 1, position: 1, department: 1, experience: 1, isLoginAccess: 1 }).skip(offset)
+//             .limit(limit).sort(sort)
+
+//         if (getMembers.length === 0) {
+//             return {
+//                 message: messages.itemListNotFound.replace("Item", messageConstant.MEMBER),
+//                 data: [],
+//                 status: statusCodeConstant.NOT_FOUND
+//             }
+//         }
+//         const { items, totalPages } = getPagingData(
+//             getMembers,
+//             _page,
+//             limit,
+//             totalItems
+//         );
+//         return {
+//             message: messages.fetListSuccess.replace("Item", messageConstant.MEMBER),
+//             data: items,
+//             totalPages,
+//             totalItems,
+//             status: statusCodeConstant.OK
+//         }
+//     }
+//     catch (error) {
+//         throw errorHandler(error);
+//     }
+// };
+
+/**
+ * This API is used to get a list of uthorized team members.
+ * @returns {object} Response containing members data and pagination info
+ */
+const authMemberList = async (_limit, _page, sortBy, sortOrder, search) => {
+    try {
+        const { limit, offset } = getPagination(_page, _limit);
+        const sort = {};
+
+        // Construct search filter
+        const matchStage = { isLoginAccess: true };
+        if (search) {
+            matchStage["name"] = { $regex: search, $options: "i" };
+        }
+
+        // Handle sorting
+        if (sortBy && sortOrder) {
+            sort[sortBy] = sortOrder === sortingConstant.ASC ? 1 : -1;
+        } else {
+            // Default sorting by creation date
+            sort["createdAt"] = 1;
+        }
+
+        // Aggregation pipeline
+        const pipeline = [
+            { $match: matchStage }, // Filter matching members
+            {
+                $project: {
+                    name: 1,
+                    email: 1,
+                    position: 1,
+                    department: 1,
+                    experience: 1,
+                    isLoginAccess: 1,
+                }
+            },
+            { $sort: sort }, // Apply sorting
+            { $skip: offset }, // Skip documents for pagination
+            { $limit: limit }, // Limit the number of documents
+        ];
+
+        // Get total count of matching members
+        const totalItems = await memberModel.countDocuments(matchStage);
+
+        // Get members using aggregation
+        const getMembers = await memberModel.aggregate(pipeline);
+
+        if (getMembers.length === 0) {
+            return {
+                message: messages.itemListNotFound.replace("Item", messageConstant.MEMBER),
+                data: [],
+                status: statusCodeConstant.NOT_FOUND,
+            };
+        }
+
+        // Calculate total pages
+        const totalPages = Math.ceil(totalItems / limit);
+
+        return {
+            message: messages.fetListSuccess.replace("Item", messageConstant.MEMBER),
+            data: getMembers,
+            totalPages,
+            totalItems,
+            status: statusCodeConstant.OK,
+        };
+    } catch (error) {
+        throw errorHandler(error);
+    }
+};
+
+
 export default {
     verifyMemberLogin,
     addTeamMembers,
     getMembers,
     getMemberById,
     updateMember,
-    deleteMember
+    deleteMember,
+    authMemberList
 }

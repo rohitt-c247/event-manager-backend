@@ -35,8 +35,9 @@ const addTeamMembers = async (req, res) => {
  */
 const getMembers = async (req, res) => {
     try {
-        const { message, status, data } = await memberService.getMembers()
-        res.status(statusCodeConstant.OK).json({ message, status, data })
+        const { _limit, _page, sortBy, sortOrder, search } = req.query
+        const { message, status, data, totalPages, totalItems } = await memberService.getMembers(_limit, _page, sortBy, sortOrder, search)
+        res.status(statusCodeConstant.OK).json({ message, status, data, totalPages, totalItems })
     } catch (error) {
         console.log("calling error", error)
         res.status(typeof error.status === "number" ? error.status : statusCodeConstant.INTERNAL_SERVER_ERROR).json({ error: error.message, status: error.status })
@@ -87,11 +88,29 @@ const deleteMember = async (req, res) => {
         res.status(typeof error.status === "number" ? error.status : statusCodeConstant.INTERNAL_SERVER_ERROR).json({ error: error.message, status: error.status })
     }
 }
+
+/**
+ * This api for get authorized team members
+ * @param {*} req 
+ * @param {*} res 
+ */
+const getAuthTeamMembers = async (req, res) => {
+    try {
+        const { _limit, _page, sortBy, sortOrder, search } = req.query
+        const { message, status, data, totalPages, totalItems } = await memberService.authMemberList(_limit, _page, sortBy, sortOrder, search)
+        res.status(statusCodeConstant.OK).json({ message, status, data, totalPages, totalItems })
+    } catch (error) {
+        console.log("calling error", error)
+        res.status(typeof error.status === "number" ? error.status : statusCodeConstant.INTERNAL_SERVER_ERROR).json({ error: error.message, status: error.status })
+    }
+}
+
 export default {
     verifyMemberLogin,
     addTeamMembers,
     getMembers,
     getMemberById,
     updateMember,
-    deleteMember
+    deleteMember,
+    getAuthTeamMembers
 }
