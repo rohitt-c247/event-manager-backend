@@ -30,11 +30,21 @@ const createEvent = async (eventBody) => {
  * THis api use for to get the list of an event
  * @returns 
  */
-const listOfAnEvent = async (search) => {
+const listOfAnEvent = async (search, searchByDate) => {
     try {
         const filter = {};
         if (search) {
             filter["name"] = { $regex: search, $options: "i" };
+        }
+        if (searchByDate) {
+            // filter["date"]={ $eq: new Date(searchByDate)}
+            const startOfDay = new Date(new Date(searchByDate).setUTCHours(0, 0, 0, 0)); // Start of the day (00:00:00)
+            const endOfDay = new Date(new Date(searchByDate).setUTCHours(23, 59, 59, 999)); // End of the day (23:59:59)
+
+            filter["date"] = {
+                $gte: startOfDay, // Greater than or equal to the start of the day
+                $lte: endOfDay // Less than or equal to the end of the day
+            };
         }
         const getEventList = await eventModel.find(filter, { name: 1, date: 1 })
         console.log("getEventList", getEventList)
