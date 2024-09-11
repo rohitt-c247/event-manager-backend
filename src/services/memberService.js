@@ -72,7 +72,7 @@ const addTeamMembers = async (memberBody) => {
             department,
             experience,
             isLoginAccess
-        })
+        });
         return {
             message: messages.itemAddedSuccess.replace("Item", messageConstant.MEMBER),
             status: statusCodeConstant.CREATED
@@ -173,6 +173,15 @@ const updateMember = async (memberId, memberBody) => {
                 status: statusCodeConstant.NOT_FOUND
             }
         }
+        /** check if update already exist email */
+        if (memberBody.email != null && memberBody.email != findMember.email) {
+            if (await memberModel.findOne({ email: memberBody.email }) != null) {
+                throw {
+                    message: messages.alreadyExist,
+                    status: statusCodeConstant.BAD_REQUEST
+                };
+            }
+        }
         await memberModel.findOneAndUpdate({ _id: memberId }, { $set: { name, email, department, position, experience, isLoginAccess } })
         return {
             message: messages.itemUpdatedSuccess.replace("Item", messageConstant.MEMBER),
@@ -180,7 +189,11 @@ const updateMember = async (memberId, memberBody) => {
         }
     }
     catch (error) {
-        throw errorHandler(error);
+        if (error && error.status === 400) {
+            throw error
+        } else {
+            throw errorHandler(error);
+        }
     }
 }
 /**
