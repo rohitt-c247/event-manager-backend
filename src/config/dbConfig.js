@@ -8,8 +8,8 @@ import { messages } from "../common/messages.js";
 */
 const databaseConnection = async () => {
     return mongoose.connect(DATABASE_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
+        // useNewUrlParser: true,
+        // useUnifiedTopology: true,
     }).then(() => {
         console.log(messages.connectionCreated);
     }).catch((err) => {

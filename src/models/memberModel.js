@@ -6,7 +6,7 @@ const memberSchema = new Schema(
         email: { type: String, default: "" },
         position: { type: String, default: "" },
         department: { type: String, default: "" },
-        experience: { type: String, default: null },
+        experience: { type: Number, default: null },
         isLoginAccess: { type: Boolean, default: false }
     },
     {
