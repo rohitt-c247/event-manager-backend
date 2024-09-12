@@ -18,7 +18,7 @@ const messages = {
     itemUpdatedSuccess: "Item updated successfully!",
     itemDeletedSuccess: "Item deleted successfully!",
     invalidRequest: "Invalid request!",
-    alreadyExist:"Email is already exist"
+    alreadyExist:"Email is already exists"
 };
 
 export { messages };

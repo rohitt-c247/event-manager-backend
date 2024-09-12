@@ -163,8 +163,6 @@ const getMemberById = async (memberId) => {
         }
     }
     catch (error) {
-        console.log(error, '----error');
-
         throw errorHandler(error);
     }
 }
@@ -176,6 +174,8 @@ const getMemberById = async (memberId) => {
  */
 const updateMember = async (memberId, memberBody) => {
     try {
+        console.log('kkk',memberBody);
+        
         const { name, email, department, position, experience, isLoginAccess } = memberBody
         const findMember = await memberModel.findOne({ _id: memberId })
         if (findMember === null || findMember === undefined) {
@@ -200,11 +200,10 @@ const updateMember = async (memberId, memberBody) => {
         }
     }
     catch (error) {
-        if (error && error.status === 400) {
-            throw error
-        } else {
-            throw errorHandler(error);
+        if (error?.status === 400) {
+            throw error;
         }
+        throw errorHandler?.(error) ?? error;
     }
 }
 /**
