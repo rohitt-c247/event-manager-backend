@@ -43,13 +43,14 @@ const verifyMemberLogin = async (auth) => {
          */
         if (getUserDetail && payload.hd === ORGANIZATION_DOMAIN && isVerifiedUser) {
             /** update google picture of logedin user  */
-            await memberModel.findOneAndUpdate({ _id: getUserDetail._id }, { $set: { picture: payload.picture } })
+            await memberModel.findOneAndUpdate({ _id: getUserDetail._id },
+                { $set: { picture: payload.picture } })
             return {
                 message: messages.memberLoginSuccess,
                 data: {
                     id: getUserDetail._id.toHexString(),
                     name: getUserDetail.name,
-                    picture: getUserDetail.picture ? getUserDetail.picture : '',
+                    picture: payload.picture ? payload.picture : '',
                 },
                 status: statusCodeConstant.OK
             }
