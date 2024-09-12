@@ -46,11 +46,17 @@ const verifyMemberLogin = async (auth) => {
             await memberModel.findOneAndUpdate({ _id: getUserDetail._id }, { $set: { picture: payload.picture } })
             return {
                 message: messages.memberLoginSuccess,
+                data: {
+                    id: getUserDetail._id.toHexString(),
+                    name: getUserDetail.name,
+                    picture: getUserDetail.picture ? getUserDetail.picture : '',
+                },
                 status: statusCodeConstant.OK
             }
         } else {
             return {
                 message: messages.contactToAdmin,
+                data: null,
                 status: statusCodeConstant.FORBIDDEN
             }
         }
@@ -141,7 +147,7 @@ const getMembers = async (_limit, _page, sortBy, sortOrder, search) => {
  */
 const getMemberById = async (memberId) => {
     try {
-        const getMember = await memberModel.findOne({ _id: memberId }, { name: 1, email: 1, department: 1, position: 1, experience: 1, isLoginAccess: 1,picture:1 })
+        const getMember = await memberModel.findOne({ _id: memberId }, { name: 1, email: 1, department: 1, position: 1, experience: 1, isLoginAccess: 1, picture: 1 })
         if (getMember === null || getMember === undefined) {
             return {
                 message: messages.itemListNotFound.replace("Item list", messageConstant.MEMBER),
