@@ -50,7 +50,7 @@ const verifyMemberLogin = async (auth) => {
                 data: {
                     id: getUserDetail._id.toHexString(),
                     name: getUserDetail.name,
-                    picture: payload.picture ? payload.picture : '',
+                    picture: payload.picture || '',
                 },
                 status: statusCodeConstant.OK
             }
@@ -163,6 +163,8 @@ const getMemberById = async (memberId) => {
         }
     }
     catch (error) {
+        console.log(error, '----error');
+
         throw errorHandler(error);
     }
 }
