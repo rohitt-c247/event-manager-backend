@@ -7,7 +7,8 @@ const memberSchema = new Schema(
         position: { type: String, default: "" },
         department: { type: String, default: "" },
         experience: { type: Number, default: null },
-        isLoginAccess: { type: Boolean, default: false }
+        isLoginAccess: { type: Boolean, default: false },
+        picture: { type: String, default: null }
     },
     {
         timestamps: true,

@@ -36,12 +36,14 @@ const verifyMemberLogin = async (auth) => {
             audience: GOOGLE_CLIENT_ID,  // Specify the CLIENT_ID of the app that accesses the backend
         });
         const payload = userInfo.getPayload();
-        const getUserDetail = await memberModel.find({ email: payload.email, isLoginAccess: true })
+        const getUserDetail = await memberModel.findOne({ email: payload.email, isLoginAccess: true })
         const isVerifiedUser = payload.email.includes(ORGANIZATION_DOMAIN) // Check with only {{chapter247.com}} organization email will login
         /**
          * {{payload.hd}} should be 'chapter247.com' to check only this organization will work
          */
-        if (getUserDetail.length && payload.hd === ORGANIZATION_DOMAIN && isVerifiedUser) {
+        if (getUserDetail && payload.hd === ORGANIZATION_DOMAIN && isVerifiedUser) {
+            /** update google picture of logedin user  */
+            await memberModel.findOneAndUpdate({ _id: getUserDetail._id }, { $set: { picture: payload.picture } })
             return {
                 message: messages.memberLoginSuccess,
                 status: statusCodeConstant.OK
@@ -139,7 +141,7 @@ const getMembers = async (_limit, _page, sortBy, sortOrder, search) => {
  */
 const getMemberById = async (memberId) => {
     try {
-        const getMember = await memberModel.findOne({ _id: memberId }, { name: 1, email: 1, department: 1, position: 1, experience: 1, isLoginAccess: 1 })
+        const getMember = await memberModel.findOne({ _id: memberId }, { name: 1, email: 1, department: 1, position: 1, experience: 1, isLoginAccess: 1,picture:1 })
         if (getMember === null || getMember === undefined) {
             return {
                 message: messages.itemListNotFound.replace("Item list", messageConstant.MEMBER),
