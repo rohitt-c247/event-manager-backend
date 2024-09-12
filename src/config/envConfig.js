@@ -19,8 +19,6 @@ let FRONT_APP_URL
 if (PORT === '8000') {
     FRONT_APP_URL = process.env.FRONT_APP_LOCAL_URL
 }
-
-console.log(FRONT_APP_URL)
 export {
     APP_NAME,
     DATABASE_URI,
