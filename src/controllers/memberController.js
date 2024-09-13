@@ -35,8 +35,8 @@ const addTeamMembers = async (req, res) => {
  */
 const getMembers = async (req, res) => {
     try {
-        const { _limit, _page, sortBy, sortOrder, search } = req.query
-        const { message, status, data, totalPages, totalItems } = await memberService.getMembers(_limit, _page, sortBy, sortOrder, search)
+        const { _limit, _page, sortBy, sortOrder, search, department, position, loginAccess } = req.query
+        const { message, status, data, totalPages, totalItems } = await memberService.getMembers(_limit, _page, sortBy, sortOrder, search, department, position, loginAccess)
         res.status(statusCodeConstant.OK).json({ message, status, data, totalPages, totalItems })
     } catch (error) {
         console.log("calling error", error)

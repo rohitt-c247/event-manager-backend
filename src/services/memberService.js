@@ -107,7 +107,7 @@ const addTeamMembers = async (memberBody) => {
  * This api is use for to get list members
  * @returns 
  */
-const getMembers = async (_limit, _page, sortBy, sortOrder, search) => {
+const getMembers = async (_limit, _page, sortBy, sortOrder, search, department, position, loginAccess) => {
     try {
         const { limit, offset } = getPagination(_page, _limit);
         /**
@@ -118,6 +118,20 @@ const getMembers = async (_limit, _page, sortBy, sortOrder, search) => {
         if (search) {
             filter["name"] = { $regex: search, $options: "i" };
         }
+
+        // find by Department
+        if (department) {
+            filter["department"] = { $regex: department, $options: "i" };
+        }
+        // find by Position
+        if (position) {
+            filter["position"] = { $regex: position, $options: "i" };
+        }
+        // find by login access
+        if (loginAccess) {
+            filter["isLoginAccess"] = loginAccess;
+        }
+
         if (sortBy && sortOrder) {
             sort[sortBy] = sortOrder === sortingConstant.ASC ? 1 : -1;
         } else {
