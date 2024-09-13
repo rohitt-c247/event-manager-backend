@@ -9,10 +9,10 @@ const app = express();
 
 // resolution of cross origin issues
 const corsOption = {
-    origin: true,
+    origin: process.env.FRONT_APP_LOCAL_URL.split(","),
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
-    exposedHeaders: ["x-auth-token", "authorization"],
+    // exposedHeaders: ["x-auth-token", "authorization"],
 };
 app.use(cors(corsOption));
 

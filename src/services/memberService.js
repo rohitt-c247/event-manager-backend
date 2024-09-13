@@ -380,6 +380,17 @@ const authMemberList = async (_limit, _page, sortBy, sortOrder, search) => {
 };
 
 
+const getMemberList = async (memberId) => {
+    try {
+        console.log("calling delete", memberId)
+        const members = await memberModel.find({})
+        return members;
+    }
+    catch (error) {
+        throw errorHandler(error);
+    }
+}
+
 export default {
     verifyMemberLogin,
     addTeamMembers,
@@ -387,5 +398,6 @@ export default {
     getMemberById,
     updateMember,
     deleteMember,
-    authMemberList
+    authMemberList,
+    getMemberList
 }

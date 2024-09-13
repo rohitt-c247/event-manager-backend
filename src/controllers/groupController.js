@@ -1,5 +1,5 @@
 import { statusCodeConstant } from "../common/index.js"
-import { saveGroups } from "../services/groupService.js";
+import { getGroupList, saveGroups } from "../services/groupService.js";
 
 export const postGroup = async (req, res) => {
     try {

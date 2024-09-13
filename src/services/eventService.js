@@ -2,6 +2,7 @@ import { messageConstant, statusCodeConstant } from "../common/constant.js";
 import { errorHandler } from "../common/errorHandler.js";
 import { messages } from "../common/messages.js";
 import { eventModel } from "../models/index.js";
+import { saveGroups } from "./groupService.js";
 
 /**
  * This api is use for to create an event
@@ -16,7 +17,10 @@ const createEvent = async (eventBody) => {
             description,
             date,
             numberOfGroup
-        })
+        });
+        /** create groups based on number of group count */
+        await saveGroups(eventBody)
+
         return {
             message: messages.itemAddedSuccess.replace("Item", messageConstant.EVENT),
             status: statusCodeConstant.CREATED
