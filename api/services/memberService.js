@@ -97,10 +97,10 @@ const addTeamMembers = async (memberBody) => {
         }
     }
     catch (error) {
-        if (error?.status === 400) {
+        if (error && error.status === 400) {
             throw error;
         }
-        throw errorHandler?.(error) ?? error;
+        throw errorHandler(error) || error;
     }
 };
 /**
@@ -226,10 +226,10 @@ const updateMember = async (memberId, memberBody) => {
         }
     }
     catch (error) {
-        if (error?.status === 400) {
+        if (error && error.status === 400) {
             throw error;
         }
-        throw errorHandler?.(error) ?? error;
+        throw errorHandler(error) || error;
     }
 }
 /**
