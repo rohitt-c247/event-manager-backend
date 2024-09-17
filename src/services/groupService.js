@@ -83,3 +83,15 @@ export const getGroupList = async (userId) => {
         throw errorHandler(error);
     }
 }
+
+export const shiftMember = async (memberId, groupId) => {
+    try {
+
+        const results = await memberModel.aggregate(pipeline).toArray();
+
+        console.log('Aggregation Results:', results);
+    }
+    catch (error) {
+        throw errorHandler(error);
+    }
+}
