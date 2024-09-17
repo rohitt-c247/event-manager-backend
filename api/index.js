@@ -25,7 +25,7 @@ databaseConnection()
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-app.get('/api/test', (req, res) => {
+app.get('/', (req, res) => {
     res.end(`Hello! Go to item:`);
 });
 
