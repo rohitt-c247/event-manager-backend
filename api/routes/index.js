@@ -7,10 +7,10 @@ import groupsRoute from "./groupRoute.js";
 
 const router = express.Router();
 
-router.use("/member", memberRoute);
-router.use("/department", departmentRoute);
-router.use("/event", eventRoute);
-router.use("/position", positionRoute);
+router.use("/api/member", memberRoute);
+router.use("/api/department", departmentRoute);
+router.use("/api/event", eventRoute);
+router.use("/api/position", positionRoute);
 // router.use('/group', groupsRoute)
 
 export default router;

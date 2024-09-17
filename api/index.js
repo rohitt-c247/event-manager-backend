@@ -25,6 +25,10 @@ databaseConnection()
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+app.get('/api/test', (req, res) => {
+    res.end(`Hello! Go to item:`);
+});
+
 /**
  * Using the app to use our all routes
  */
