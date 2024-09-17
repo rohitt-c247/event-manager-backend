@@ -6,9 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon ./api/index.js",
-    "build": "babel api -d dist",
-    "start": "node ./dist/index.js"
+    "start": "node api/index.js"
   },
   "repository": {
     "type": "git",
