@@ -20,7 +20,7 @@ export const saveGroups = async (data) => {
             });
             // Iterate over each item in the group
             gp.forEach(async (item) => {
-                console.log(item._id.toHexString(), '----', userId);
+                console.log(item._id.toHexString(), '----', typeof userId);
                 const payload = {
                     memeberId: new ObjectId('66e2d9f68246faba90a1c984'),
                     creatorId: userId,
@@ -86,9 +86,8 @@ export const getGroupList = async (userId) => {
 
 export const shiftMember = async (memberId, groupId) => {
     try {
-
         const results = await memberModel.aggregate(pipeline).toArray();
-
+        await memberModel.findOneAndUpdate({ _id: groupMemberId }, { $set: { gro, description, date, numberOfGroup } })
         console.log('Aggregation Results:', results);
     }
     catch (error) {
