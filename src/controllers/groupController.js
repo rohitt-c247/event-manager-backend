@@ -13,7 +13,7 @@ export const postGroup = async (req, res) => {
 
 export const getGroup = async (req, res) => {
     try {
-        const { message, status, data } = await getGroupList();
+        const { message, status, data } = await getGroupList(req.query.userId);
         res.status(status ? status : statusCodeConstant.OK).json(
             { message, status, data })
     } catch (error) {

@@ -239,7 +239,6 @@ const updateMember = async (memberId, memberBody) => {
  */
 const deleteMember = async (memberId) => {
     try {
-        console.log("calling delete", memberId)
         const getMember = await memberModel.findOne({ _id: memberId })
         if (getMember === null || getMember === undefined) {
             return {
@@ -382,7 +381,6 @@ const authMemberList = async (_limit, _page, sortBy, sortOrder, search) => {
 
 const getMemberList = async (memberId) => {
     try {
-        console.log("calling delete", memberId)
         const members = await memberModel.find({})
         return members;
     }

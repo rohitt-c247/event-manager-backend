@@ -3,39 +3,34 @@ import groupMembers from "../models/groupMembers.js";
 import groupModel from "../models/groupModel.js";
 import memberModel from "../models/memberModel.js";
 import memberService from "./memberService.js";
-
+import { ObjectId } from "mongodb";
 export const saveGroups = async (data) => {
     try {
         let groups = [];
         const { name, userId } = data
-
-        // groupMembers
         const members = await memberService.getMemberList();
-
         for (let i = 0; i < members.length; i += data.numberOfGroup) {
             groups.push(members.slice(i, i + data.numberOfGroup));
         }
-        let transformedGroup = [];
         groups.forEach(async (gp, groupIndex) => {
             /**create group with name and save into db */
             const groupresult = await groupModel.create({
                 userId,
                 name: `${name}_group_${groupIndex + 1}`,
             });
-            console.log('groupresult--', groupresult);
-
             // Iterate over each item in the group
             gp.forEach(async (item) => {
-                await groupMembers.create({
-                    _id: item._id,
-                    memeberId: item._id, // Hardcoded for now, can be dynamic
-                    creatorId: userId,           // Hardcoded for now, can be dynamic
-                    groupId: groupresult._id          // Hardcoded for now, can be dynamic
-                })
+                console.log(item._id.toHexString(), '----', userId);
+                const payload = {
+                    memeberId: new ObjectId('66e2d9f68246faba90a1c984'),
+                    creatorId: userId,
+                    groupId: groupresult._id
+                }
+                console.log('payload---', payload);
 
+                await groupMembers.create(payload)
             });
         })
-
         // return transformedGroup
         // create group by event data
 
@@ -47,14 +42,42 @@ export const saveGroups = async (data) => {
     }
 }
 
-export const getGroupList = async () => {
+export const getGroupList = async (userId) => {
     try {
-        const positionList = await memberModel.find({}, { name: 1 })
-        return {
-            message: messages.itemFetchSuccess.replace("Item", "Position"),
-            data: positionList,
-            status: statusCodeConstant.OK
-        }
+        // const positionList = await memberModel.find({}, { name: 1 })
+        // return {
+        //     message: messages.itemFetchSuccess.replace("Item", "Position"),
+        //     data: positionList,
+        //     status: statusCodeConstant.OK
+        // }
+        const pipeline = [
+            {
+                // Match the document with the given userId
+                $match: {
+                    userId: ObjectId(userId)
+                }
+            },
+            {
+                // Convert memberId and groupId to ObjectId
+                $addFields: {
+                    memberId: { $convert: { input: "$memberId", to: "objectId", onError: null, onNull: null } },
+                    groupId: { $convert: { input: "$groupId", to: "objectId", onError: null, onNull: null } }
+                }
+            },
+            {
+                // Optionally, you can lookup related data for memberId or groupId from another collection
+                // Here, we are projecting only the fields we want
+                $project: {
+                    memberId: 1,
+                    groupId: 1,
+                    userId: 1
+                }
+            }
+        ];
+
+        const results = await memberModel.aggregate(pipeline).toArray();
+
+        console.log('Aggregation Results:', results);
     }
     catch (error) {
         throw errorHandler(error);

@@ -101,7 +101,6 @@ const getEventById = async (eventId) => {
  */
 const deleteAnEvent = async (eventId) => {
     try {
-        console.log("calling delete", eventId)
         const getEvent = await eventModel.findOne({ _id: eventId })
         if (getEvent === null || getEvent === undefined) {
             return {

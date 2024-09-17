@@ -11,6 +11,6 @@ router.use("/member", memberRoute);
 router.use("/department", departmentRoute);
 router.use("/event", eventRoute);
 router.use("/position", positionRoute);
-// router.use('/group', groupsRoute)
+router.use('/group', groupsRoute)
 
 export default router;
