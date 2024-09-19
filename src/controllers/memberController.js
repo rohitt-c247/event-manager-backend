@@ -10,7 +10,7 @@ const verifyMemberLogin = async (req, res) => {
         const data = await memberService.verifyMemberLogin(req.body);
         res.status(statusCodeConstant.OK).json(data)
     } catch (error) {
-        console.log("Error while login--", error);
+        console.error("Error while login--", error);
         res.status(typeof error.status === "number" ? error.status : statusCodeConstant.INTERNAL_SERVER_ERROR).json({ error: error.message, status: error.status })
     }
 }
@@ -24,7 +24,7 @@ const addTeamMembers = async (req, res) => {
         const { message, status } = await memberService.addTeamMembers(req.body)
         res.status(status ? status : statusCodeConstant.OK).json({ message, status })
     } catch (error) {
-        console.log("calling error", error)
+        console.error("calling error", error)
         res.status(typeof error.status === "number" ? error.status : statusCodeConstant.INTERNAL_SERVER_ERROR).json({ error: error.message, status: error.status })
     }
 }
@@ -39,7 +39,7 @@ const getMembers = async (req, res) => {
         const { message, status, data, totalPages, totalItems } = await memberService.getMembers(_limit, _page, sortBy, sortOrder, search, department, position, loginAccess)
         res.status(statusCodeConstant.OK).json({ message, status, data, totalPages, totalItems })
     } catch (error) {
-        console.log("calling error", error)
+        console.error("calling error", error)
         res.status(typeof error.status === "number" ? error.status : statusCodeConstant.INTERNAL_SERVER_ERROR).json({ error: error.message, status: error.status })
     }
 }
@@ -54,7 +54,7 @@ const updateMember = async (req, res) => {
         const { message, status, data } = await memberService.updateMember(id, req.body)
         res.status(statusCodeConstant.OK).json({ message, status, data })
     } catch (error) {
-        console.log("calling error", error)
+        console.error("calling error", error)
         res.status(typeof error.status === "number" ? error.status : statusCodeConstant.INTERNAL_SERVER_ERROR).json({ error: error.message, status: error.status })
     }
 }
@@ -69,7 +69,7 @@ const getMemberById = async (req, res) => {
         const { message, status, data } = await memberService.getMemberById(id)
         res.status(statusCodeConstant.OK).json({ message, status, data })
     } catch (error) {
-        console.log("calling error", error)
+        console.error("calling error", error)
         res.status(typeof error.status === "number" ? error.status : statusCodeConstant.INTERNAL_SERVER_ERROR).json({ error: error.message, status: error.status })
     }
 }
@@ -84,7 +84,7 @@ export const deleteMember = async (req, res) => {
         const { message, status } = await memberService.deleteMember(id)
         res.status(statusCodeConstant.OK).json({ message, status })
     } catch (error) {
-        console.log("calling error", error)
+        console.error("calling error", error)
         res.status(typeof error.status === "number" ? error.status : statusCodeConstant.INTERNAL_SERVER_ERROR).json({ error: error.message, status: error.status })
     }
 }
@@ -100,7 +100,7 @@ const getAuthTeamMembers = async (req, res) => {
         const { message, status, data, totalPages, totalItems } = await memberService.authMemberList(_limit, _page, sortBy, sortOrder, search)
         res.status(statusCodeConstant.OK).json({ message, status, data, totalPages, totalItems })
     } catch (error) {
-        console.log("calling error", error)
+        console.error("calling error", error)
         res.status(typeof error.status === "number" ? error.status : statusCodeConstant.INTERNAL_SERVER_ERROR).json({ error: error.message, status: error.status })
     }
 }

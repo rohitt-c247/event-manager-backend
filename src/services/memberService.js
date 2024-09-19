@@ -17,7 +17,6 @@ const verifyMemberLogin = async (auth) => {
     try {
         // Getting code from the frontend
         const { code } = auth;
-        console.log("code", code)
         const oauth2Client = new google.auth.OAuth2(
             GOOGLE_CLIENT_ID,
             GOOGLE_SECRET_ID,
@@ -62,7 +61,7 @@ const verifyMemberLogin = async (auth) => {
             }
         }
     } catch (error) {
-        console.log("Error while login++++++++++", error)
+        console.error("Error while login++++++++++", error)
         throw errorHandler(error)
     }
 }
@@ -200,8 +199,6 @@ const getMemberById = async (memberId) => {
  */
 const updateMember = async (memberId, memberBody) => {
     try {
-        console.log('kkk', memberBody);
-
         const { name, email, department, position, experience, isLoginAccess } = memberBody
         const findMember = await memberModel.findOne({ _id: memberId })
         if (findMember === null || findMember === undefined) {

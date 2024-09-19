@@ -13,7 +13,7 @@ const databaseConnection = async () => {
     }).then(() => {
         console.log(messages.connectionCreated);
     }).catch((err) => {
-        console.log(messages.connectionFailed, err.message);
+        console.error(messages.connectionFailed, err.message);
     })
 }
 

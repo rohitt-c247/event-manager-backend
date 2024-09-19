@@ -12,12 +12,13 @@ import { saveGroups } from "./groupService.js";
 const createEvent = async (eventBody) => {
     try {
         const { name, description, date, numberOfGroup } = eventBody
-        await eventModel.create({
+        const eventDoc = await eventModel.create({
             name,
             description,
             date,
             numberOfGroup
         });
+        eventBody.eventId = eventDoc._id;
         /** create groups based on number of group count */
         await saveGroups(eventBody)
 
@@ -51,7 +52,6 @@ const listOfAnEvent = async (search, searchByDate) => {
             };
         }
         const getEventList = await eventModel.find(filter, { name: 1, date: 1 })
-        console.log("getEventList", getEventList)
         if (getEventList.length === 0) {
             return {
                 message: messages.itemListNotFound.replace("Item", "Event"),

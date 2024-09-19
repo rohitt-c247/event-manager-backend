@@ -6,7 +6,7 @@ export const postGroup = async (req, res) => {
         const { message, status, data } = await saveGroups(req.body);
         res.status(status ? status : statusCodeConstant.OK).json({ message, status, data })
     } catch (error) {
-        console.log("calling error", error)
+        console.error("calling error", error)
         res.status(typeof error.status === "number" ? error.status : statusCodeConstant.INTERNAL_SERVER_ERROR).json({ error: error.message, status: error.status })
     }
 }
@@ -17,19 +17,20 @@ export const getGroup = async (req, res) => {
         res.status(status ? status : statusCodeConstant.OK).json(
             { message, status, data })
     } catch (error) {
-        console.log("calling error", error)
+        console.error("calling error", error)
         res.status(typeof error.status === "number" ? error.status : statusCodeConstant.INTERNAL_SERVER_ERROR).json({ error: error.message, status: error.status })
     }
 }
 
 export const shiftGroupMember = async (req, res) => {
     try {
-        const {memberId,groupId}=req.query;
-        const { message, status, data } = await shiftMember(memberId,groupId);
+        const { groupMemberId } = req.query;
+        const { groupId } = req.body
+        const { message, status, data } = await shiftMember(groupMemberId, groupId);
         res.status(status ? status : statusCodeConstant.OK).json(
             { message, status, data })
     } catch (error) {
-        console.log("calling error", error)
+        console.error("calling error", error)
         res.status(typeof error.status === "number" ? error.status : statusCodeConstant.INTERNAL_SERVER_ERROR).json({ error: error.message, status: error.status })
     }
 }

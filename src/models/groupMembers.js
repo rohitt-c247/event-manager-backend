@@ -2,9 +2,9 @@ import { Schema, model } from "mongoose"
 
 const groupMemberSchema = new Schema(
     {
-        userId: { type: String, default: null },
-        memberId: { type: String, default: null },
-        groupId: { type: String, default: null }
+        userId: { type: String, default: "" },
+        memberId: { type: String, default: "" },
+        groupId: { type: String, default: "" }
     },
     {
         timestamps: true,

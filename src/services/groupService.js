@@ -1,13 +1,12 @@
 import { errorHandler, messages, statusCodeConstant } from "../common/index.js";
 import groupMembers from "../models/groupMembers.js";
 import groupModel from "../models/groupModel.js";
-import memberModel from "../models/memberModel.js";
 import memberService from "./memberService.js";
-import { ObjectId } from "mongodb";
+
 export const saveGroups = async (data) => {
     try {
         let groups = [];
-        const { name, userId } = data
+        const { name, userId, eventId } = data
         const members = await memberService.getMemberList();
         for (let i = 0; i < members.length; i += data.numberOfGroup) {
             groups.push(members.slice(i, i + data.numberOfGroup));
@@ -16,25 +15,18 @@ export const saveGroups = async (data) => {
             /**create group with name and save into db */
             const groupresult = await groupModel.create({
                 userId,
-                name: `${name}_group_${groupIndex + 1}`,
+                eventId: eventId,
+                name: `${name} group ${groupIndex + 1}`,
             });
             // Iterate over each item in the group
             gp.forEach(async (item) => {
-                console.log(item._id.toHexString(), '----', typeof userId);
-                const payload = {
-                    memeberId: new ObjectId('66e2d9f68246faba90a1c984'),
-                    creatorId: userId,
+                await groupMembers.create({
+                    memberId: item._id.toString(),
+                    userId,
                     groupId: groupresult._id
-                }
-                console.log('payload---', payload);
-
-                await groupMembers.create(payload)
-            });
+                });
+            })
         })
-        // return transformedGroup
-        // create group by event data
-
-        // await groupMembers.insertMany(groups);
         return messages.itemAddedSuccess;
     }
     catch (error) {
@@ -44,51 +36,104 @@ export const saveGroups = async (data) => {
 
 export const getGroupList = async (userId) => {
     try {
-        // const positionList = await memberModel.find({}, { name: 1 })
-        // return {
-        //     message: messages.itemFetchSuccess.replace("Item", "Position"),
-        //     data: positionList,
-        //     status: statusCodeConstant.OK
-        // }
-        const pipeline = [
-            {
-                // Match the document with the given userId
-                $match: {
-                    userId: ObjectId(userId)
-                }
-            },
-            {
-                // Convert memberId and groupId to ObjectId
-                $addFields: {
-                    memberId: { $convert: { input: "$memberId", to: "objectId", onError: null, onNull: null } },
-                    groupId: { $convert: { input: "$groupId", to: "objectId", onError: null, onNull: null } }
-                }
-            },
-            {
-                // Optionally, you can lookup related data for memberId or groupId from another collection
-                // Here, we are projecting only the fields we want
-                $project: {
-                    memberId: 1,
-                    groupId: 1,
-                    userId: 1
-                }
-            }
-        ];
+        const result = await groupMembers.aggregate(
+            [
+                // Match the main data document by _id
+                { $match: {} },
+                {
+                    $addFields: {
+                        userId: {
+                            $toObjectId: "$userId"
+                        }
+                    }
+                },
+                {
+                    $addFields: {
+                        memberId: {
+                            $toObjectId: "$memberId"
+                        }
+                    }
+                },
+                {
+                    $addFields: {
+                        groupId: {
+                            $toObjectId: "$groupId"
+                        }
+                    }
+                },
+                // Lookup and join with User collection
+                {
+                    $lookup: {
+                        from: 'members', // The collection name of User schema (usually lowercase and plural)
+                        localField: 'userId', // Field in MainData to match
+                        foreignField: '_id', // Field in User schema to match
+                        as: 'user' // Output array field with joined User data
+                    }
+                },
 
-        const results = await memberModel.aggregate(pipeline).toArray();
+                // Lookup and join with Member collection
+                {
+                    $lookup: {
+                        from: 'members', // The collection name of Member schema
+                        localField: 'memberId', // Field in MainData to match
+                        foreignField: '_id', // Field in Member schema to match
+                        as: 'member' // Output array field with joined Member data
+                    }
+                },
 
-        console.log('Aggregation Results:', results);
+                // Lookup and join with Group collection
+                {
+                    $lookup: {
+                        from: 'groups', // The collection name of Group schema
+                        localField: 'groupId', // Field in MainData to match
+                        foreignField: '_id', // Field in Group schema to match
+                        as: 'group' // Output array field with joined Group data
+                    }
+                },
+
+                // Unwind arrays to get single objects
+                { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+                { $unwind: { path: '$member', preserveNullAndEmptyArrays: true } },
+                { $unwind: { path: '$group', preserveNullAndEmptyArrays: true } },
+
+                // Project the desired fields
+                {
+                    $project: {
+                        userId: 1,
+                        memberId: 1,
+                        groupId: 1,
+                        createdAt: 1,
+                        updatedAt: 1,
+                        user: { name: 1, email: 1, position: 1, department: 1, experience: 1, isLoginAccess: 1 }, // Fields from member schema as user
+                        member: { name: 1, email: 1, position: 1, department: 1, experience: 1, isLoginAccess: 1 }, // Fields from Member schema
+                        group: { name: 1, _id: 1 } // Fields from Group schema
+                    }
+                }
+            ]
+        );
+        return {
+            message: messages.groupFetchSuccess,
+            data: result,
+            status: statusCodeConstant.OK
+        }
     }
     catch (error) {
         throw errorHandler(error);
     }
 }
 
-export const shiftMember = async (memberId, groupId) => {
+export const shiftMember = async (groupMemberId, groupId) => {
     try {
-        const results = await memberModel.aggregate(pipeline).toArray();
-        await memberModel.findOneAndUpdate({ _id: groupMemberId }, { $set: { gro, description, date, numberOfGroup } })
-        console.log('Aggregation Results:', results);
+        const result = await groupMembers.findOneAndUpdate(
+            { _id: groupMemberId },
+            {
+                $set: { groupId: groupId }
+            })
+        return {
+            message: messages.itemUpdatedSuccess,
+            data: null,
+            status: statusCodeConstant.OK
+        }
     }
     catch (error) {
         throw errorHandler(error);
