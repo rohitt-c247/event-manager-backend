@@ -38,7 +38,7 @@ export const getGroupList = async (userId) => {
     try {
         const result = await groupMembers.aggregate(
             [
-                // Match the main data document by _id
+                /**  Match the main data document */
                 { $match: {} },
                 {
                     $addFields: {
@@ -61,7 +61,7 @@ export const getGroupList = async (userId) => {
                         }
                     }
                 },
-                // Lookup and join with User collection
+                /** Lookup and join with User collection */
                 {
                     $lookup: {
                         from: 'members', // The collection name of User schema (usually lowercase and plural)
@@ -128,6 +128,25 @@ export const shiftMember = async (groupMemberId, groupId) => {
             { _id: groupMemberId },
             {
                 $set: { groupId: groupId }
+            })
+        return {
+            message: messages.itemUpdatedSuccess,
+            data: null,
+            status: statusCodeConstant.OK
+        }
+    }
+    catch (error) {
+        throw errorHandler(error);
+    }
+}
+
+
+export const udpateGroupDetails = async (groupId, name) => {
+    try {
+        await groupModel.findOneAndUpdate(
+            { _id: groupId },
+            {
+                $set: { name: name }
             })
         return {
             message: messages.itemUpdatedSuccess,
