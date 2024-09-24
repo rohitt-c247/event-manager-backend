@@ -37,7 +37,7 @@ export const saveGroups = async (data) => {
 
 export const getGroupList = async (eventId, page, limit) => {
     try {
-        const skip = (page - 1) * limit;        
+        const skip = (page - 1) * limit;
         const result = await groupMembers.aggregate(
             [
                 /**  Match the main data document */
@@ -117,9 +117,19 @@ export const getGroupList = async (eventId, page, limit) => {
             ]
         );
         const totalRecords = await groupMembers.countDocuments({ eventId: eventId }); // Get total count for the event
+        const groupedByGroupId = result.reduce((acc, item) => {
+            const groupName = item.group.name;
+            if (!acc[groupName]) {
+                acc[groupName] = [];
+            }
+            acc[groupName].push(item);
+            return acc;
+        }, {});
+
         return {
             message: messages.groupFetchSuccess,
-            data: result,
+            total: totalRecords,
+            data: groupedByGroupId,
             status: statusCodeConstant.OK
         }
     }
