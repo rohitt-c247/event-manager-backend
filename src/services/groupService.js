@@ -1,32 +1,47 @@
 import { errorHandler, messages, statusCodeConstant } from "../common/index.js";
 import groupMembers from "../models/groupMembers.js";
 import groupModel from "../models/groupModel.js";
+import { emailService } from "./emailService.js";
 import memberService from "./memberService.js";
 
 export const saveGroups = async (data) => {
     try {
+        let memberEmails = [];
         let groups = [];
+
         const { name, userId, eventId } = data
         const members = await memberService.getMemberList();
         for (let i = 0; i < members.length; i += data.numberOfGroup) {
             groups.push(members.slice(i, i + data.numberOfGroup));
         }
-        groups.forEach(async (gp, groupIndex) => {
-            /**create group with name and save into db */
+        /** Loop through each group and process it asynchronously */
+        for (let groupIndex = 0; groupIndex < groups.length; groupIndex++) {
+            const gp = groups[groupIndex];
+
+            /** Create the group in the database */
             const groupresult = await groupModel.create({
                 userId,
-                eventId: eventId,
+                eventId,
                 name: `${name} group ${groupIndex + 1}`,
             });
-            // Iterate over each item in the group
-            gp.forEach(async (item) => {
+
+            /** Create an array to store email promises */
+            const emailPromises = gp.map(async (item) => {
+                /** Add member's email to memberEmails array */
+                memberEmails.push(item.email);
+                /** Create a group member entry in the database */
                 await groupMembers.create({
                     memberId: item._id.toString(),
                     userId,
                     groupId: groupresult._id
                 });
-            })
-        })
+            });
+
+            /** Wait for all promises in the current group to complete */
+            await Promise.all(emailPromises);
+        }
+        /** send mail to the group members */
+        // emailService(memberEmails)
         return messages.itemAddedSuccess;
     }
     catch (error) {
@@ -39,7 +54,7 @@ export const getGroupList = async (userId) => {
         const result = await groupMembers.aggregate(
             [
                 /**  Match the main data document */
-                { $match: {} },
+                { $match: { userId: userId } },
                 {
                     $addFields: {
                         userId: {
@@ -128,9 +143,9 @@ export const shiftMember = async (groupMemberId, groupId) => {
             { _id: groupMemberId },
             {
                 $set: { groupId: groupId }
-            })
+            });
         return {
-            message: messages.itemUpdatedSuccess,
+            message: messages.itemUpdatedSuccess.replace("Item","Group member"),
             data: null,
             status: statusCodeConstant.OK
         }
@@ -140,7 +155,6 @@ export const shiftMember = async (groupMemberId, groupId) => {
     }
 }
 
-
 export const udpateGroupDetails = async (groupId, name) => {
     try {
         await groupModel.findOneAndUpdate(
@@ -149,7 +163,7 @@ export const udpateGroupDetails = async (groupId, name) => {
                 $set: { name: name }
             })
         return {
-            message: messages.itemUpdatedSuccess,
+            message: messages.itemUpdatedSuccess.replace("Item","Group"),
             data: null,
             status: statusCodeConstant.OK
         }
