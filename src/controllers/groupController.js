@@ -13,7 +13,8 @@ export const postGroup = async (req, res) => {
 
 export const getGroup = async (req, res) => {
     try {
-        const { message, status, data } = await getGroupList(req.query.userId);
+        const { eventId, pageNumber, pageSize } = req.query;
+        const { message, status, data } = await getGroupList(eventId, Number(pageNumber), Number(pageSize));
         res.status(status ? status : statusCodeConstant.OK).json(
             { message, status, data })
     } catch (error) {

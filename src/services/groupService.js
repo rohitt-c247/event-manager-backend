@@ -23,7 +23,8 @@ export const saveGroups = async (data) => {
                 await groupMembers.create({
                     memberId: item._id.toString(),
                     userId,
-                    groupId: groupresult._id
+                    groupId: groupresult._id,
+                    eventId: eventId
                 });
             })
         })
@@ -34,16 +35,17 @@ export const saveGroups = async (data) => {
     }
 }
 
-export const getGroupList = async (userId) => {
+export const getGroupList = async (eventId, page, limit) => {
     try {
+        const skip = (page - 1) * limit;        
         const result = await groupMembers.aggregate(
             [
                 /**  Match the main data document */
-                { $match: {} },
+                { $match: { eventId: eventId } },
                 {
                     $addFields: {
-                        userId: {
-                            $toObjectId: "$userId"
+                        eventId: {
+                            $toObjectId: "$eventId"
                         }
                     }
                 },
@@ -64,10 +66,10 @@ export const getGroupList = async (userId) => {
                 /** Lookup and join with User collection */
                 {
                     $lookup: {
-                        from: 'members', // The collection name of User schema (usually lowercase and plural)
-                        localField: 'userId', // Field in MainData to match
+                        from: 'events', // The collection name of User schema (usually lowercase and plural)
+                        localField: 'eventId', // Field in MainData to match
                         foreignField: '_id', // Field in User schema to match
-                        as: 'user' // Output array field with joined User data
+                        as: 'event' // Output array field with joined User data
                     }
                 },
 
@@ -92,25 +94,29 @@ export const getGroupList = async (userId) => {
                 },
 
                 // Unwind arrays to get single objects
-                { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+                { $unwind: { path: '$event', preserveNullAndEmptyArrays: true } },
                 { $unwind: { path: '$member', preserveNullAndEmptyArrays: true } },
                 { $unwind: { path: '$group', preserveNullAndEmptyArrays: true } },
 
                 // Project the desired fields
                 {
                     $project: {
-                        userId: 1,
+                        eventId: 1,
                         memberId: 1,
                         groupId: 1,
                         createdAt: 1,
                         updatedAt: 1,
-                        user: { name: 1, email: 1, position: 1, department: 1, experience: 1, isLoginAccess: 1 }, // Fields from member schema as user
+                        event: { name: 1, description: 1, numberOfGroup: 1, date: 1 }, // Fields from event schema as user
                         member: { name: 1, email: 1, position: 1, department: 1, experience: 1, isLoginAccess: 1 }, // Fields from Member schema
                         group: { name: 1, _id: 1 } // Fields from Group schema
                     }
-                }
+                },
+                // Pagination
+                { $skip: skip },   // Skip the documents based on the page number
+                { $limit: limit }  // Limit the documents to the specified amount
             ]
         );
+        const totalRecords = await groupMembers.countDocuments({ eventId: eventId }); // Get total count for the event
         return {
             message: messages.groupFetchSuccess,
             data: result,

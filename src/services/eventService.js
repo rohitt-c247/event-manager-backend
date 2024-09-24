@@ -76,7 +76,12 @@ const listOfAnEvent = async (search, searchByDate) => {
  */
 const getEventById = async (eventId) => {
     try {
-        const getEvent = await eventModel.findOne({ _id: eventId }, { name: 1, date: 1 })
+        const getEvent = await eventModel.findOne({ _id: eventId }, {
+            name: 1,
+            description: 1,
+            numberOfGroup: 1,
+            date: 1
+        })
         if (getEvent === null || getEvent === undefined) {
             return {
                 message: messages.itemListNotFound.replace("Item list", "Event"),
