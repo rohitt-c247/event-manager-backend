@@ -18,8 +18,9 @@ const messages = {
     itemUpdatedSuccess: "Item updated successfully!",
     itemDeletedSuccess: "Item deleted successfully!",
     invalidRequest: "Invalid request!",
-    alreadyExist:"Email is already exists",
+    alreadyExist: "Email is already exists",
     groupFetchSuccess: "Groups fetch successfully!",
+    deleteGroup: "Group deleted successfully"
 };
 
 export { messages };

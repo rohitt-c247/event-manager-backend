@@ -1,9 +1,9 @@
 import { statusCodeConstant } from "../common/index.js"
-import { getGroupList, saveGroups, shiftMember, udpateGroupDetails } from "../services/groupService.js";
+import { createGroup, deleteGroupById, getGroupList, saveGroups, shiftMember, udpateGroupDetails } from "../services/groupService.js";
 
 export const postGroup = async (req, res) => {
     try {
-        const { message, status, data } = await saveGroups(req.body);
+        const { message, status, data } = await createGroup(req.body);
         res.status(status ? status : statusCodeConstant.OK).json({ message, status, data })
     } catch (error) {
         console.error("calling error", error)
@@ -36,12 +36,24 @@ export const shiftGroupMember = async (req, res) => {
     }
 }
 
-
 export const updateGroup = async (req, res) => {
     try {
         const { groupId } = req.query;
         const { name } = req.body
         const { message, status, data } = await udpateGroupDetails(groupId, name);
+        res.status(status ? status : statusCodeConstant.OK).json(
+            { message, status, data })
+    } catch (error) {
+        console.error("calling error", error)
+        res.status(typeof error.status === "number" ? error.status : statusCodeConstant.INTERNAL_SERVER_ERROR).json({ error: error.message, status: error.status })
+    }
+}
+
+
+export const deleteGroup = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { message, status, data } = await deleteGroupById(id);
         res.status(status ? status : statusCodeConstant.OK).json(
             { message, status, data })
     } catch (error) {

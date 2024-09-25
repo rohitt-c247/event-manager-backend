@@ -1,24 +1,59 @@
-import { errorHandler, messages, statusCodeConstant } from "../common/index.js";
+import { errorHandler, messageConstant, messages, statusCodeConstant } from "../common/index.js";
 import groupMembers from "../models/groupMembers.js";
 import groupModel from "../models/groupModel.js";
 import memberService from "./memberService.js";
 
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+function distributeIntoGroups(members, numGroups) {
+    const groups = [];
+    const totalMembers = members.length;
+    const minGroupSize = Math.floor(totalMembers / numGroups);  // Minimum size each group can have
+    let remainingMembers = totalMembers % numGroups;  // Extra members to distribute
+
+    let startIndex = 0;
+
+    for (let i = 0; i < numGroups; i++) {
+        let groupSize = minGroupSize;
+        // Distribute the extra members across the first few groups
+        if (remainingMembers > 0) {
+            groupSize += 1;
+            remainingMembers--;
+        }
+
+        const group = members.slice(startIndex, startIndex + groupSize);
+        groups.push(group);
+        startIndex += groupSize;
+    }
+
+    return groups;
+}
 export const saveGroups = async (data) => {
     try {
         let groups = [];
-        const { name, userId, eventId } = data
+        const { name, userId, eventId } = data;
+        /** Step 1: List of members  */
         const members = await memberService.getMemberList();
-        for (let i = 0; i < members.length; i += data.numberOfGroup) {
-            groups.push(members.slice(i, i + data.numberOfGroup));
-        }
+        /**  Step 2: Shuffle members randomly */
+        const shuffledMembers = shuffleArray([...members]);
+        /** Create distribute members into groups */
+        const numGroups = data.numberOfGroup;
+        groups = distributeIntoGroups(shuffledMembers, numGroups);
+        /** step 4: store members  by create group  */
         groups.forEach(async (gp, groupIndex) => {
             /**create group with name and save into db */
             const groupresult = await groupModel.create({
                 userId,
                 eventId: eventId,
-                name: `${name} group ${groupIndex + 1}`,
+                name: `group ${groupIndex + 1}`,
             });
-            // Iterate over each item in the group
+            /** Iterate over each item in the group */
             gp.forEach(async (item) => {
                 await groupMembers.create({
                     memberId: item._id.toString(),
@@ -125,11 +160,18 @@ export const getGroupList = async (eventId, page, limit) => {
             acc[groupName].push(item);
             return acc;
         }, {});
+        /** format data of groups by index */
+        const formattedData = {};
+        const groupsKeys = Object.keys(groupedByGroupId);
+        groupsKeys.forEach((group, index) => {
+            const newGroupName = `group ${index + 1}`;
+            formattedData[newGroupName] = groupedByGroupId[group];
+        });
 
         return {
             message: messages.groupFetchSuccess,
             total: totalRecords,
-            data: groupedByGroupId,
+            data: formattedData,
             status: statusCodeConstant.OK
         }
     }
@@ -168,6 +210,80 @@ export const udpateGroupDetails = async (groupId, name) => {
             message: messages.itemUpdatedSuccess,
             data: null,
             status: statusCodeConstant.OK
+        }
+    }
+    catch (error) {
+        throw errorHandler(error);
+    }
+}
+
+
+/**
+ * This Service use for to delete the group and group Members
+ * @param {*} id 
+ * @returns 
+ */
+export const deleteGroupById = async (groupId) => {
+    try {
+        const groupDetail = await groupModel.findOne({ _id: groupId })
+        if (groupDetail === null || groupDetail === undefined) {
+            return {
+                message: messages.itemListNotFound.replace("Item list", messageConstant.GROUP),
+                status: statusCodeConstant.NOT_FOUND,
+                data: null
+            }
+        }
+        /** Delete group from db */
+        await groupModel.findOneAndDelete({ _id: groupId });
+        /** Delete member related to the group */
+        await groupMembers.deleteMany({
+            groupId: groupId
+        })
+        return {
+            message: messages.deleteGroup,
+            status: statusCodeConstant.OK,
+            data: null
+        }
+    }
+    catch (error) {
+        throw errorHandler(error);
+    }
+}
+
+export const createGroup = async (data) => {
+    try {
+        let groups = [];
+        const { name, userId, eventId } = data
+        /**create group with name and save into db */
+        await groupModel.create({
+            userId,
+            eventId: eventId,
+            name: `${name} group ${groupIndex + 1}`,
+        });
+        // const members = await memberService.getMemberList();
+        // for (let i = 0; i < members.length; i += data.numberOfGroup) {
+        //     groups.push(members.slice(i, i + data.numberOfGroup));
+        // }
+        // groups.forEach(async (gp, groupIndex) => {
+        //     /**create group with name and save into db */
+        //     const groupresult = await groupModel.create({
+        //         userId,
+        //         eventId: eventId,
+        //         name: `${name} group ${groupIndex + 1}`,
+        //     });
+        //     // Iterate over each item in the group
+        //     gp.forEach(async (item) => {
+        //         await groupMembers.create({
+        //             memberId: item._id.toString(),
+        //             userId,
+        //             groupId: groupresult._id,
+        //             eventId: eventId
+        //         });
+        //     })
+        // })        
+        return {
+            message: messages.itemAddedSuccess.replace("Item", messageConstant.GROUP),
+            status: statusCodeConstant.CREATED
         }
     }
     catch (error) {

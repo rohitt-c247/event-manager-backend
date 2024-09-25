@@ -13,7 +13,8 @@ const statusCodeConstant = {
 const messageConstant = {
     MEMBER: "Member",
     DEPARTMENT: "Department",
-    EVENT: "Event"
+    EVENT: "Event",
+    GROUP:"Group"
 }
 const paginationConstants = {
     ITEM_LIMIT: 100,
