@@ -164,10 +164,13 @@ export const getGroupList = async (eventId, page, limit) => {
         const formattedData = {};
         const groupsKeys = Object.keys(groupedByGroupId);
         groupsKeys.forEach((group, index) => {
-            const newGroupName = `group ${index + 1}`;
-            formattedData[newGroupName] = groupedByGroupId[group];
+            if (group.includes('group')) {
+                const newGroupName = `group ${index + 1}`;
+                formattedData[newGroupName] = groupedByGroupId[group];
+            } else {
+                formattedData[group] = groupedByGroupId[group];
+            }
         });
-
         return {
             message: messages.groupFetchSuccess,
             total: totalRecords,
