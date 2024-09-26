@@ -7,8 +7,8 @@ const api = express();
 
 // resolution of cross origin issues
 const corsOption = {
-    origin: "*",
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    origin: "http://localhost:3000", // Allows all origins
+    methods: "*",
     credentials: true,
     // exposedHeaders: ["x-auth-token", "authorization"],
 };
