@@ -7,7 +7,7 @@ const api = express();
 
 // resolution of cross origin issues
 const corsOption = {
-    origin: "http://localhost:3000", // Allows all origins
+    origin: "https://event-manager-rosy-gamma.vercel.app", // Allows all origins
     methods: "*",
     credentials: true,
     // exposedHeaders: ["x-auth-token", "authorization"],
