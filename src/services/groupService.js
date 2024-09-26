@@ -256,12 +256,13 @@ export const deleteGroupById = async (groupId) => {
 export const createGroup = async (data) => {
     try {
         let groups = [];
-        const { name, userId, eventId } = data
+        const { name, userId, eventId } = data;
+        const groupCount = await groupModel.find({ eventId: eventId })
         /**create group with name and save into db */
         await groupModel.create({
             userId,
             eventId: eventId,
-            name: `${name} group ${groupIndex + 1}`,
+            name: `group ${groupCount + 1}`,
         });
         // const members = await memberService.getMemberList();
         // for (let i = 0; i < members.length; i += data.numberOfGroup) {
