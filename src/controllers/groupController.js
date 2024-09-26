@@ -25,6 +25,7 @@ export const getGroup = async (req, res) => {
 
 export const shiftGroupMember = async (req, res) => {
     try {
+        /** shift member with in group doing manage group */
         const { groupMemberId } = req.query;
         const { groupId } = req.body
         const { message, status, data } = await shiftMember(groupMemberId, groupId);
