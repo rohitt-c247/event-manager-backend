@@ -35,5 +35,5 @@ app.use('/', router)
  * that is defined in the .env file
  */
 app.listen(PORT, () => {
-    return console.log(`${messages.serverRunningString} ${PORT}`);
+    return console.info(`${messages.serverRunningString} ${PORT}`);
 });

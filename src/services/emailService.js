@@ -10,8 +10,8 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-export const emailService = async (recipientEmail) => {
-    const emailDetails = await emailContent();
+export const emailService = async (recipientEmail, memberList) => {
+    const emailDetails = await emailContent(memberList);
     // Email options
     const mailOptions = {
         from: process.env.SENDER_EMAIL, // Sender's email address
@@ -33,86 +33,8 @@ export const emailService = async (recipientEmail) => {
 }
 
 
-const emailContent = () => {
-    const groupData = {
-        "Diwali fest group 1": [
-            {
-                "_id": "66f2898a1b28c6298b23bcc5",
-                "memberId": "66e147a0faed56a787db2631",
-                "member": {
-                    "name": "zarir",
-                    "email": "shanti78908@chapter247.com",
-                    "position": "Sr. Software Developer",
-                    "department": "Mern stack",
-                    "experience": 4,
-                    "isLoginAccess": false
-                }
-            },
-            {
-                "_id": "66f2898a1b28c6298b23bcc3",
-                "memberId": "66dad3eb080947cec72ec374",
-                "member": {
-                    "name": "456547",
-                    "email": "shanti.c@chapter247.com",
-                    "position": "Sr. Mern stack",
-                    "department": "Mern stack",
-                    "experience": 5,
-                    "isLoginAccess": true
-                }
-            },
-            {
-                "_id": "66f2898a1b28c6298b23bcc4",
-                "memberId": "66dadb9b2a32d491df564641",
-                "member": {
-                    "name": "Shanti Chouhan",
-                    "email": "shanti78@chapter247.com",
-                    "position": "Sr. Software Developer",
-                    "department": "Mern stack",
-                    "experience": "1",
-                    "isLoginAccess": true
-                }
-            }
-        ],
-        "Diwali fest group 2": [
-            {
-                "_id": "66f2898a1b28c6298b23bccb",
-                "memberId": "66e2c6e3c14b9e061a91a02c",
-                "member": {
-                    "name": "ghhgtjty",
-                    "email": "shanti.c@chapter247.com",
-                    "position": "Sr. Software Developer",
-                    "department": "Mern stack",
-                    "experience": 5,
-                    "isLoginAccess": true
-                }
-            },
-            {
-                "_id": "66f2898a1b28c6298b23bccd",
-                "memberId": "66e2d9f68246faba90a1c984",
-                "member": {
-                    "name": "ghjhgjh",
-                    "email": "shanti.c6@chapter247.com",
-                    "position": "Sr. Software Developer",
-                    "department": "Mern stack",
-                    "experience": 5,
-                    "isLoginAccess": true
-                }
-            },
-            {
-                "_id": "66f2898a1b28c6298b23bccc",
-                "memberId": "66e2c6e6c14b9e061a91a02e",
-                "member": {
-                    "name": "htytu",
-                    "email": "shanti.c@chapter247.com",
-                    "position": "Sr. Software Developer",
-                    "department": "Mern stack",
-                    "experience": 5,
-                    "isLoginAccess": true
-                }
-            }
-        ]
-    };
-
+const emailContent = (memberList) => {
+    const groupData = memberList;
     // Start building the HTML content
     let html = `
     <!DOCTYPE html>

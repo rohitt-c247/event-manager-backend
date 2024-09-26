@@ -11,7 +11,7 @@ const databaseConnection = async () => {
         // useNewUrlParser: true,
         // useUnifiedTopology: true,
     }).then(() => {
-        console.log(messages.connectionCreated);
+        console.info(messages.connectionCreated);
     }).catch((err) => {
         console.error(messages.connectionFailed, err.message);
     })
