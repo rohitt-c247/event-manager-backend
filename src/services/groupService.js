@@ -224,12 +224,12 @@ export const getGroupList = async (eventId, page, limit) => {
     }
 }
 
-export const shiftMember = async (groupMemberId, groupId) => {
+export const shiftMember = async (groupMemberId, groupId, status) => {
     try {
         const result = await groupMembers.findOneAndUpdate(
             { _id: groupMemberId },
             {
-                $set: { groupId: groupId }
+                $set: { groupId: groupId, status: status }
             })
         return {
             message: messages.itemUpdatedSuccess,
