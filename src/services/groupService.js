@@ -72,7 +72,7 @@ export const saveGroups = async (data) => {
 
 export const getGroupList = async (eventId, page, limit) => {
     try {
-        const skip = (page - 1) * limit;
+        // const skip = (page - 1) * limit;
         const result = await groupModel.aggregate(
             [
                 /**  Match the main data document */
@@ -185,8 +185,8 @@ export const getGroupList = async (eventId, page, limit) => {
                     }
                 },
                 // Pagination
-                { $skip: skip },   // Skip the documents based on the page number
-                { $limit: limit }  // Limit the documents to the specified amount
+                // { $skip: skip },   // Skip the documents based on the page number
+                // { $limit: limit }  // Limit the documents to the specified amount
             ]
         );
         const totalRecords = await groupMembers.countDocuments({ eventId: eventId });
