@@ -73,7 +73,7 @@ export const saveGroups = async (data) => {
 export const getGroupList = async (eventId, page, limit) => {
     try {
         const skip = (page - 1) * limit;
-        const result = await groupMembers.aggregate(
+        const result = await groupModel.aggregate(
             [
                 /**  Match the main data document */
                 { $match: { eventId: eventId } },
@@ -86,15 +86,8 @@ export const getGroupList = async (eventId, page, limit) => {
                 },
                 {
                     $addFields: {
-                        memberId: {
-                            $toObjectId: "$memberId"
-                        }
-                    }
-                },
-                {
-                    $addFields: {
-                        groupId: {
-                            $toObjectId: "$groupId"
+                        userId: {
+                            $toObjectId: "$userId"
                         }
                     }
                 },
@@ -107,21 +100,52 @@ export const getGroupList = async (eventId, page, limit) => {
                         as: 'event' // Output array field with joined User data
                     }
                 },
-
                 // Lookup and join with Member collection
                 {
                     $lookup: {
                         from: 'members', // The collection name of Member schema
-                        localField: 'memberId', // Field in MainData to match
+                        localField: 'userId', // Field in MainData to match
                         foreignField: '_id', // Field in Member schema to match
-                        as: 'member' // Output array field with joined Member data
+                        as: 'user' // Output array field with joined Member data
                     }
                 },
-
+                {
+                    $lookup: {
+                        from: 'groupmembers', // The collection name of Member schema
+                        let: { groupId: { $toString: '$_id' } }, // Convert groupId to string
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $eq: ['$groupId', '$$groupId'] // Match groupId as string in groupmembers
+                                    }
+                                }
+                            },
+                            {
+                                $addFields: {
+                                    memberId: {
+                                        $toObjectId: "$memberId"
+                                    }
+                                }
+                            },
+                            {
+                                $lookup: {
+                                    from: 'members', // Join back to members collection to get member details
+                                    localField: 'memberId', // Field in GroupMembers to match
+                                    foreignField: '_id', // Field in Members to match
+                                    as: 'member' // Output array field with joined Member data
+                                }
+                            }
+                        ],
+                        // localField: '_id', // Field in MainData to match
+                        // foreignField: 'groupId', // Field in Member schema to match
+                        as: 'groupMember' // Output array field with joined Member data
+                    }
+                },
                 // Lookup and join with Group collection
                 {
                     $lookup: {
-                        from: 'groups', // The collection name of Group schema
+                        from: 'groupmembers', // The collection name of Group schema
                         localField: 'groupId', // Field in MainData to match
                         foreignField: '_id', // Field in Group schema to match
                         as: 'group' // Output array field with joined Group data
@@ -130,20 +154,34 @@ export const getGroupList = async (eventId, page, limit) => {
 
                 // Unwind arrays to get single objects
                 { $unwind: { path: '$event', preserveNullAndEmptyArrays: true } },
-                { $unwind: { path: '$member', preserveNullAndEmptyArrays: true } },
+                { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
                 { $unwind: { path: '$group', preserveNullAndEmptyArrays: true } },
-
+                { $unwind: { path: '$groupMember', preserveNullAndEmptyArrays: true } },
+                { $unwind: { path: '$groupMember.member', preserveNullAndEmptyArrays: true } }, // Unwind memberDetails array
+                // Project the desired fields
                 // Project the desired fields
                 {
                     $project: {
                         eventId: 1,
                         memberId: 1,
+                        name: 1,
                         groupId: 1,
                         createdAt: 1,
                         updatedAt: 1,
                         event: { name: 1, description: 1, numberOfGroup: 1, date: 1 }, // Fields from event schema as user
-                        member: { name: 1, email: 1, position: 1, department: 1, experience: 1, isLoginAccess: 1 }, // Fields from Member schema
-                        group: { name: 1, _id: 1 } // Fields from Group schema
+                        userId: { name: 1, email: 1, position: 1, department: 1, experience: 1, isLoginAccess: 1 }, // Fields from Member schema
+                        group: { name: 1, _id: 1 }, // Fields from Group schema
+                        groupMember: {
+                            _id: 1,
+                            memberId: 1,
+                            groupId: 1,
+                            member: {
+                                name: 1,
+                                email: 1,
+                                position: 1,
+                                department: 1
+                            }
+                        }
                     }
                 },
                 // Pagination
@@ -151,24 +189,27 @@ export const getGroupList = async (eventId, page, limit) => {
                 { $limit: limit }  // Limit the documents to the specified amount
             ]
         );
-        const totalRecords = await groupMembers.countDocuments({ eventId: eventId }); // Get total count for the event
-        const groupedByGroupId = result.reduce((acc, item) => {
-            const groupName = item.group.name;
-            if (!acc[groupName]) {
-                acc[groupName] = [];
+        const totalRecords = await groupMembers.countDocuments({ eventId: eventId });
+        const groupedData = result.reduce((acc, member) => {
+            const groupName = member.name;
+            // Initialize the group if it doesn't exist
+            if (!acc.data[groupName]) {
+                acc.data[groupName] = [];
             }
-            acc[groupName].push(item);
+            // Push the member data to the corresponding group
+            acc.data[groupName].push(member);
             return acc;
-        }, {});
+        }, { data: {} });
         /** format data of groups by index */
+        const unfilteredGroupData = groupedData.data;
         const formattedData = {};
-        const groupsKeys = Object.keys(groupedByGroupId);
+        const groupsKeys = Object.keys(unfilteredGroupData);
         groupsKeys.forEach((group, index) => {
             if (group.includes('group')) {
                 const newGroupName = `group ${index + 1}`;
-                formattedData[newGroupName] = groupedByGroupId[group];
+                formattedData[newGroupName] = unfilteredGroupData[group];
             } else {
-                formattedData[group] = groupedByGroupId[group];
+                formattedData[group] = unfilteredGroupData[group];
             }
         });
         return {
