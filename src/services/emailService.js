@@ -33,7 +33,7 @@ export const emailService = async (recipientEmail, memberList) => {
 }
 
 
-const emailContent = (memberList) => {
+export const emailContent = (memberList) => {
     const groupData = memberList;
     // Start building the HTML content
     let html = `
@@ -76,35 +76,25 @@ const emailContent = (memberList) => {
             </thead>
             <tbody id="table-body">
             <tr>`;
-
     // Loop through each group and add table rows
     for (let groupName in groupData) {
         if (groupData.hasOwnProperty(groupName)) {
+            // Concatenate member names into a single string
+            const memberNames = groupData[groupName].map(memberData => memberData.groupMember.member.name).join('<br>'); // Each member on a new line
             html += `
-                <tr>
+            <tr>
                 <td>${groupName}</td>
-                    <td class=""></td>
-                </tr>`;
-            groupData[groupName].forEach(memberData => {
-                const member = memberData.member;
-                html += `
-                <tr>
-                <td></td>
-
-                    <td>${member.name}</td>
-                </tr>`;
-            });
+                <td>${memberNames}</td>
+            </tr>`;
         }
     }
-
     // Close the table and HTML
     html += `
-    </tr>
-            </tbody>
-        </table>
-    </body>
-    </html>`;
-
+    </tr >
+            </tbody >
+        </table >
+    </body >
+    </html > `;
     return html;
 };
 

@@ -29,7 +29,7 @@ export const shiftGroupMember = async (req, res) => {
         /** shift member with in group doing manage group */
         const { groupMemberId } = req.query;
         const { groupId } = req.body
-        const { message, status, data } = await shiftMember(groupMemberId, groupId);
+        const { message, status, data } = await shiftMember(groupMemberId, groupId, req.body.status);
         res.status(status ? status : statusCodeConstant.OK).json(
             { message, status, data })
     } catch (error) {
