@@ -1,5 +1,5 @@
 import { statusCodeConstant } from "../common/index.js"
-import { createGroup, deleteGroupById, getGroupList, saveGroups, shiftMember, udpateGroupDetails } from "../services/groupService.js";
+import { createGroup, createGroupWithCommandPrompt, deleteGroupById, getGroupList, saveGroups, shiftMember, udpateGroupDetails } from "../services/groupService.js";
 
 export const postGroup = async (req, res) => {
     try {
@@ -56,6 +56,19 @@ export const deleteGroup = async (req, res) => {
     try {
         const { id } = req.params;
         const { message, status, data } = await deleteGroupById(id);
+        res.status(status ? status : statusCodeConstant.OK).json(
+            { message, status, data })
+    } catch (error) {
+        console.error("calling error", error)
+        res.status(typeof error.status === "number" ? error.status : statusCodeConstant.INTERNAL_SERVER_ERROR).json({ error: error.message, status: error.status })
+    }
+}
+
+export const createCustomGroup = async (req, res) => {
+    try {
+        const { userId, eventId } = req.params;
+        //  Number(pageNumber), Number(pageSize)
+        const { message, status, data } = await createGroupWithCommandPrompt(userId, eventId, req.query);
         res.status(status ? status : statusCodeConstant.OK).json(
             { message, status, data })
     } catch (error) {

@@ -73,7 +73,6 @@ function distributeIntoGroups(members, numGroups) {
     return groups;
 }
 
-
 export const saveGroups = async (data) => {
     try {
         let memberEmails = [];
@@ -88,6 +87,7 @@ export const saveGroups = async (data) => {
         groups = distributeIntoGroups(shuffledMembers, numGroups);
         /** step 4: store members  by create group  */
         const allPromises = [];
+        // const groupsList = await createGroupWithCommandPrompt(shuffledMembers)
         groups.forEach((gp, groupIndex) => {
             // Create group with name and save into db
             const groupPromise = groupModel.create({
@@ -242,7 +242,8 @@ export const getGroupList = async (eventId) => {
                                 name: 1,
                                 email: 1,
                                 position: 1,
-                                department: 1
+                                department: 1,
+                                experience: 1
                             }
                         }
                     }
@@ -406,6 +407,122 @@ export const createGroup = async (data) => {
         }
     }
     catch (error) {
+        throw errorHandler(error);
+    }
+}
+
+function manageMemberWithGroups(members, data) {
+    let numGroups = data.numberOfGroup;
+    let groups = [];
+    let filteredMember = members;
+    // Filter only  department members
+    if (data && data.department) {
+        filteredMember = members.filter(member => member.department === data.department);
+    }
+    if (data && data.position) {
+        filteredMember = members.filter(member => member.position === data.position);
+    }
+    if (data && data.position && data && data.department) {
+        filteredMember = members.filter(member => member.position === data.position && member.department === data.department);
+    }
+    const totalMembers = filteredMember.length;
+    // Split HR members into seniors and juniors
+    let seniors = filteredMember.filter(member => member.experience > 2);
+    let juniors = filteredMember.filter(member => member.experience <= 2);
+    // Special condition: if there are 4 members but numGroups is greater than 2, enforce 2 groups
+    if (totalMembers === 4 && numGroups > 2) {
+        // First group must have 3 members, ensuring at least one senior
+        groups.push([seniors[0], ...juniors.slice(0, 2)]); // Group of 3 (1 senior, 2 juniors)
+        groups.push(juniors.slice(2)); // Remaining group of juniors
+        return groups;
+    }
+    // Ensure at least 3 members per group if possible
+    if (numGroups * 3 > totalMembers) {
+        numGroups = Math.ceil(totalMembers / 3); // Adjust numGroups to satisfy the minimum size condition
+    }
+
+    let minGroupSize = Math.floor(totalMembers / numGroups); // Minimum size each group can have
+    let remainingMembers = totalMembers % numGroups; // Extra members to distribute
+
+    let startIndex = 0;
+
+    // Track assigned members to prevent duplicates
+    let assignedMembers = new Set();
+
+    for (let i = 0; i < numGroups; i++) {
+        let groupSize = minGroupSize;
+        // Distribute the extra members across the first few groups
+        if (remainingMembers > 0) {
+            groupSize += 1;
+            remainingMembers--;
+        }
+
+        let group = [];
+
+        // Ensure there's at least one senior in each group
+        if (seniors.length > 0) {
+            let senior = seniors.shift(); // Take a senior from the seniors array
+            group.push(senior);
+            assignedMembers.add(senior); // Mark the senior as assigned
+        }
+
+        // Fill the rest of the group with juniors or remaining members
+        for (let j = startIndex; group.length < groupSize && j < juniors.length; j++) {
+            let junior = juniors[j];
+            if (!assignedMembers.has(junior)) {
+                group.push(junior);
+                assignedMembers.add(junior); // Mark the junior as assigned
+                startIndex++;
+            }
+        }
+
+        groups.push(group);
+    }
+
+    // Check if there are any unassigned members left
+    const unassignedMembers = filteredMember.filter(member => !assignedMembers.has(member));
+
+    if (unassignedMembers.length > 0) {
+        // Optionally, add these unassigned members to the last group or a new group
+        if (groups.length > 0) {
+            groups[groups.length - 1].push(...unassignedMembers); // Add to the last group
+        } else {
+            groups.push(unassignedMembers); // Add as a new group
+        }
+    }
+
+    return groups;
+}
+
+export const createGroupWithCommandPrompt = async (userId, eventId, requestParams) => {
+    try {
+        const members = await memberService.getMemberList();
+        const groups = manageMemberWithGroups(members, requestParams)
+        groups.forEach((gp, groupIndex) => {
+            // Create group with name and save into db
+            groupModel.create({
+                userId: userId,
+                eventId: eventId,
+                name: `Group ${groupIndex + 1}`,
+            }).then(groupresult => {
+                gp.map(item => {
+                    return groupMembers.create({
+                        memberId: item._id.toString(),
+                        userId,
+                        groupId: groupresult._id,
+                        eventId
+                    });
+                });
+            });
+        });
+        return {
+            message: messages.itemAddedSuccess.replace("Item", messageConstant.GROUP),
+            status: statusCodeConstant.CREATED,
+            data: null
+        }
+    }
+    catch (error) {
+        console.log('error"', error);
         throw errorHandler(error);
     }
 }
