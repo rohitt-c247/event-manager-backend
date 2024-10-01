@@ -56,7 +56,7 @@ const listOfAnEvent = async (search, searchByDate) => {
             return {
                 message: messages.itemListNotFound.replace("Item", "Event"),
                 data: [],
-                status: statusCodeConstant.NOT_FOUND
+                status: statusCodeConstant.OK
             }
         }
         return {
