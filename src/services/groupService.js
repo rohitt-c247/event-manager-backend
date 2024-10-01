@@ -15,6 +15,20 @@ function shuffleArray(array) {
 function distributeIntoGroups(members, numGroups) {
     const groups = [];
     const totalMembers = members.length;
+
+    // Special condition: if there are 4 members but the numGroups is greater than 2, enforce 2 groups
+    if (totalMembers === 4 && numGroups > 2) {
+        // We can only create 2 groups, first group must have 3 members and the second group has the remaining
+        groups.push(members.slice(0, 3));  // First group of 3 members
+        groups.push(members.slice(3));     // Second group with 1 member
+        return groups;
+    }
+
+    // Ensure at least 3 members per group if possible
+    if (numGroups * 3 > totalMembers) {
+        numGroups = Math.ceil(totalMembers / 3);  // Adjust the number of groups to satisfy the minimum size condition
+    }
+
     const minGroupSize = Math.floor(totalMembers / numGroups);  // Minimum size each group can have
     let remainingMembers = totalMembers % numGroups;  // Extra members to distribute
 
@@ -28,13 +42,38 @@ function distributeIntoGroups(members, numGroups) {
             remainingMembers--;
         }
 
-        const group = members.slice(startIndex, startIndex + groupSize);
-        groups.push(group);
+        let group = members.slice(startIndex, startIndex + groupSize);
+
+        // If a group has more than 3 members, split it into smaller groups
+        while (group.length > 3) {
+            groups.push(group.slice(0, 3)); // Add group of 3 members
+            group = group.slice(3); // Remaining members go into the next group
+        }
+
+        if (group.length > 0) {
+            groups.push(group);
+        }
+
         startIndex += groupSize;
+    }
+
+    // Check if there are any unassigned members left
+    const assignedMembers = groups.flat();
+    const unassignedMembers = members.filter(member => !assignedMembers.includes(member));
+
+    if (unassignedMembers.length > 0) {
+        // Optionally, add these unassigned members to the last group or a new group
+        if (groups.length > 0) {
+            groups[groups.length - 1].push(...unassignedMembers);  // Add to the last group
+        } else {
+            groups.push(unassignedMembers);  // Add as a new group
+        }
     }
 
     return groups;
 }
+
+
 export const saveGroups = async (data) => {
     try {
         let memberEmails = [];
@@ -54,7 +93,7 @@ export const saveGroups = async (data) => {
             const groupPromise = groupModel.create({
                 userId,
                 eventId,
-                name: `group ${groupIndex + 1}`,
+                name: `Group ${groupIndex + 1}`,
             }).then(groupresult => {
                 // Store member emails
                 memberEmails = memberEmails.concat(gp.map(item => item.email));
@@ -73,8 +112,17 @@ export const saveGroups = async (data) => {
             // Add the group creation promise to the array
             allPromises.push(groupPromise);
         });
+
         // Wait for all promises (group and member creation) to complete
         await Promise.all(allPromises);
+
+        // create one pending group
+        const res = await groupModel.create({
+            userId,
+            eventId,
+            name: ` Pending group`,
+            status: 'pending'
+        })
         const memberList = await getGroupList(eventId.toString());
         /** send mail to the group members */
         // emailService(memberEmails, memberList.data)
@@ -220,11 +268,11 @@ export const getGroupList = async (eventId) => {
         const formattedData = {};
         const groupsKeys = Object.keys(unfilteredGroupData);
         groupsKeys.forEach((group, index) => {
-            if (group.includes('group')) {
-                const newGroupName = `group ${index + 1}`;
+            if (group.trim().includes('Group')) {
+                const newGroupName = `Group ${index + 1}`;
                 formattedData[newGroupName] = unfilteredGroupData[group];
             } else {
-                formattedData[group] = unfilteredGroupData[group];
+                formattedData[group.trim()] = unfilteredGroupData[group];
             }
         });
         return {
@@ -294,9 +342,21 @@ export const deleteGroupById = async (groupId) => {
         /** Delete group from db */
         await groupModel.findOneAndDelete({ _id: groupId });
         /** Delete member related to the group */
-        await groupMembers.deleteMany({
-            groupId: groupId
-        })
+        // await groupMembers.deleteMany({
+        //     groupId: groupId
+        // })
+
+        /** set delete group member inside pending group */
+        const pendingGroup = await groupModel.findOne({ status: 'pending', eventId: groupDetail.eventId })
+        const groupMemberList = await groupMembers.find({ groupId: groupId })
+        groupMemberList.forEach(async (item) => {
+            // shift members in pending groups
+            await groupMembers.findOneAndUpdate({ _id: item._id },
+                {
+                    $set: { groupId: pendingGroup._id }
+                });
+
+        });
         return {
             message: messages.deleteGroup,
             status: statusCodeConstant.OK,
