@@ -1,5 +1,4 @@
 import nodemailer from 'nodemailer';
-console.log('process.env.SENDER_EMAIL--', process.env.SENDER_EMAIL);
 
 // Create a transporter object using your SMTP provider details
 const transporter = nodemailer.createTransport({
@@ -25,9 +24,9 @@ export const emailService = async (recipientEmail, memberList) => {
     // Send the email
     transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
-            console.log('email service error:', error);
+            console.error('email service error:', error);
         } else {
-            console.log('Email sent: ' + info.response);
+            console.info('Email sent: ' + info.response);
         }
     });
 }

@@ -51,7 +51,8 @@ const listOfAnEvent = async (search, searchByDate) => {
                 $lte: endOfDay // Less than or equal to the end of the day
             };
         }
-        const getEventList = await eventModel.find(filter, { name: 1, date: 1 })
+       
+        const getEventList = await eventModel.find(filter, { name: 1, date: 1 }).sort({date:-1})
         if (getEventList.length === 0) {
             return {
                 message: messages.itemListNotFound.replace("Item", "Event"),

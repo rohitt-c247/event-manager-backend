@@ -76,7 +76,6 @@ export const saveGroups = async (data) => {
         // Wait for all promises (group and member creation) to complete
         await Promise.all(allPromises);
         const memberList = await getGroupList(eventId.toString());
-        console.log(memberList.data);
         /** send mail to the group members */
         // emailService(memberEmails, memberList.data)
         return messages.itemAddedSuccess;

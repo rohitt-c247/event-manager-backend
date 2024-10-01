@@ -135,7 +135,7 @@ const getMembers = async (_limit, _page, sortBy, sortOrder, search, department, 
             sort[sortBy] = sortOrder === sortingConstant.ASC ? 1 : -1;
         } else {
             // Default sorting if no sortBy and sortOrder provided
-            sort = { createdAt: 1 };
+            sort = { createdAt: -1 };
         }
         const totalItems = await memberModel.countDocuments() // get the total counts od members
         const getMembers = await memberModel.find(filter, { name: 1, email: 1, position: 1, department: 1, experience: 1, isLoginAccess: 1 }).skip(offset)
