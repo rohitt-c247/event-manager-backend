@@ -9,4 +9,5 @@ const errorHandler = (error) => {
     return customError
 }
 
+
 export { errorHandler }

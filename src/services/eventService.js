@@ -1,7 +1,9 @@
 import { messageConstant, statusCodeConstant } from "../common/constant.js";
 import { errorHandler } from "../common/errorHandler.js";
 import { messages } from "../common/messages.js";
+import { getPagination, getPagingData } from "../helpers/paginationHelper.js";
 import { eventModel } from "../models/index.js";
+import { saveGroups } from "./groupService.js";
 
 /**
  * This api is use for to create an event
@@ -11,12 +13,16 @@ import { eventModel } from "../models/index.js";
 const createEvent = async (eventBody) => {
     try {
         const { name, description, date, numberOfGroup } = eventBody
-        await eventModel.create({
+        const eventDoc = await eventModel.create({
             name,
             description,
             date,
             numberOfGroup
-        })
+        });
+        eventBody.eventId = eventDoc._id;
+        /** create groups based on number of group count */
+        await saveGroups(eventBody)
+
         return {
             message: messages.itemAddedSuccess.replace("Item", messageConstant.EVENT),
             status: statusCodeConstant.CREATED
@@ -30,8 +36,13 @@ const createEvent = async (eventBody) => {
  * THis api use for to get the list of an event
  * @returns 
  */
-const listOfAnEvent = async (search, searchByDate) => {
+const listOfAnEvent = async (_limit, _page, search, searchByDate) => {
     try {
+        const { limit, offset } = getPagination(_page, _limit);
+        /**
+         * Manage sorting and pagination
+         */
+        let sort = { createdAt: -1 };
         const filter = {};
         if (search) {
             filter["name"] = { $regex: search, $options: "i" };
@@ -46,25 +57,38 @@ const listOfAnEvent = async (search, searchByDate) => {
                 $lte: endOfDay // Less than or equal to the end of the day
             };
         }
-        const getEventList = await eventModel.find(filter, { name: 1, date: 1 })
-        console.log("getEventList", getEventList)
-        if (getEventList.length === 0) {
+
+        const totalItems = await eventModel.countDocuments() // get the total counts od Events
+        const getEvents = await eventModel.find(filter, { name: 1, date: 1 }).skip(offset)
+            .limit(limit).sort(sort)
+
+        if (getEvents.length === 0) {
             return {
                 message: messages.itemListNotFound.replace("Item", "Event"),
                 data: [],
-                status: statusCodeConstant.NOT_FOUND
+                status: statusCodeConstant.OK
             }
         }
+
+        const { items, totalPages } = getPagingData(
+            getEvents,
+            _page,
+            limit,
+            totalItems
+        );
         return {
-            message: messages.itemFetchSuccess.replace("Item", "Event"),
-            data: getEventList,
+            message: messages.fetListSuccess.replace("Item", messageConstant.EVENT),
+            data: items,
+            totalPages,
+            totalItems,
             status: statusCodeConstant.OK
         }
     }
     catch (error) {
         throw errorHandler(error);
     }
-}
+};
+
 /**
  * This api use for to get event by id
  * @param {*} eventId 
@@ -72,7 +96,12 @@ const listOfAnEvent = async (search, searchByDate) => {
  */
 const getEventById = async (eventId) => {
     try {
-        const getEvent = await eventModel.findOne({ _id: eventId }, { name: 1, date: 1 })
+        const getEvent = await eventModel.findOne({ _id: eventId }, {
+            name: 1,
+            description: 1,
+            numberOfGroup: 1,
+            date: 1
+        })
         if (getEvent === null || getEvent === undefined) {
             return {
                 message: messages.itemListNotFound.replace("Item list", "Event"),
@@ -97,7 +126,6 @@ const getEventById = async (eventId) => {
  */
 const deleteAnEvent = async (eventId) => {
     try {
-        console.log("calling delete", eventId)
         const getEvent = await eventModel.findOne({ _id: eventId })
         if (getEvent === null || getEvent === undefined) {
             return {
@@ -116,6 +144,7 @@ const deleteAnEvent = async (eventId) => {
         throw errorHandler(error);
     }
 }
+
 /**
  * This service use for to update the event
  * @param {*} eventId 
