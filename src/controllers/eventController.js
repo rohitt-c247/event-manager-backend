@@ -21,14 +21,16 @@ const createEvent = async (req, res) => {
  */
 const listOfAnEvent = async (req, res) => {
     try {
-        const { search, searchByDate } = req.query
-        const { message, status, data } = await eventService.listOfAnEvent(search, searchByDate)
-        res.status(status ? status : statusCodeConstant.OK).json({ message, status, data })
+        const { _limit, _page, search, searchByDate } = req.query
+        const { message, status, data, totalPages, totalItems } = await eventService.listOfAnEvent(_limit, _page, search, searchByDate)
+        res.status(statusCodeConstant.OK).json({ message, status, data, totalPages, totalItems })
     } catch (error) {
         console.error("calling error", error)
         res.status(typeof error.status === "number" ? error.status : statusCodeConstant.INTERNAL_SERVER_ERROR).json({ error: error.message, status: error.status })
     }
 }
+
+
 /**
  * This controller is use for to get event by id
  * @param {*} req 
