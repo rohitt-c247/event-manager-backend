@@ -125,7 +125,7 @@ export const saveGroups = async (data) => {
         })
         const memberList = await getGroupList(eventId.toString());
         /** send mail to the group members */
-        // emailService(memberEmails, memberList.data)
+        // emailService(memberEmails, memberList.data,name)
         return messages.itemAddedSuccess;
     }
     catch (error) {
