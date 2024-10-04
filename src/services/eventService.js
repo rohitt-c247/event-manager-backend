@@ -4,6 +4,7 @@ import { messages } from "../common/messages.js";
 import { getPagination, getPagingData } from "../helpers/paginationHelper.js";
 import { eventModel } from "../models/index.js";
 import { saveGroups } from "./groupService.js";
+import { generateTextByAI } from "./openAIService.js";
 
 /**
  * This api is use for to create an event
@@ -172,10 +173,30 @@ const updateAnEvent = async (eventId, eventBody) => {
     }
 }
 
+/**
+ * This api is use for to create event discription
+ * @param {*} eventBody 
+ * @returns 
+ */
+const generateDiscription = async (contentQuery) => {
+    try {
+        const content = await generateTextByAI(contentQuery.message)
+        return {
+            message: messages.itemFetchSuccess.replace("Item", "Discription"),
+            data: content,
+            status: statusCodeConstant.OK
+        }
+    }
+    catch (error) {
+        throw errorHandler(error);
+    }
+};
+
 export default {
     createEvent,
     listOfAnEvent,
     getEventById,
     deleteAnEvent,
-    updateAnEvent
+    updateAnEvent,
+    generateDiscription
 }
