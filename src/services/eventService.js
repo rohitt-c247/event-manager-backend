@@ -3,7 +3,8 @@ import { errorHandler } from "../common/errorHandler.js";
 import { messages } from "../common/messages.js";
 import { getPagination, getPagingData } from "../helpers/paginationHelper.js";
 import { eventModel } from "../models/index.js";
-import { saveGroups } from "./groupService.js";
+import { emailServiceV1 } from "./emailService.js";
+import { getGroupList, saveGroups } from "./groupService.js";
 
 /**
  * This api is use for to create an event
@@ -172,10 +173,45 @@ const updateAnEvent = async (eventId, eventBody) => {
     }
 }
 
+/**
+ * This service use for to send event mail to members
+ * @param {*} eventId 
+ * @param {*} eventBody 
+ * @returns 
+ */
+const postEmailsToMembers = async (eventId, eventBody) => {
+    try {
+        const memberList = await getGroupList(eventId.toString());
+        // Initialize an empty array for the emails
+        let emailArray = [];
+        // Loop through each group and push the emails to the new array
+        Object.keys(memberList.data).forEach(group => {
+            memberList.data[group].forEach(item => {
+                if (item.groupMember && item.groupMember.member) {
+                    emailArray.push(item.groupMember.member.email);
+                }
+            });
+        });
+        emailServiceV1(emailArray, eventBody)
+        return {
+            message: messages.emailSend,
+            status: statusCodeConstant.OK,
+            data: null
+        }
+
+
+    }
+    catch (error) {
+        throw errorHandler(error);
+    }
+}
+
+
 export default {
     createEvent,
     listOfAnEvent,
     getEventById,
     deleteAnEvent,
-    updateAnEvent
+    updateAnEvent,
+    postEmailsToMembers
 }

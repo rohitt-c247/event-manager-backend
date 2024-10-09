@@ -76,10 +76,28 @@ const updateAnEvent = async (req, res) => {
         res.status(typeof error.status === "number" ? error.status : statusCodeConstant.INTERNAL_SERVER_ERROR).json({ error: error.message, status: error.status })
     }
 }
+
+/**
+ * This controller is use for to send event mail to members
+ * @param {*} req 
+ * @param {*} res 
+ */
+const postEmailsToMembers = async (req, res) => {
+    try {
+        const { eventId, content } = req.body
+        const { message, status, data } = await eventService.postEmailsToMembers(eventId, content)
+        res.status(status ? status : statusCodeConstant.OK).json({ message, status, data })
+    } catch (error) {
+        console.error("calling error", error)
+        res.status(typeof error.status === "number" ? error.status : statusCodeConstant.INTERNAL_SERVER_ERROR).json({ error: error.message, status: error.status })
+    }
+}
+
 export default {
     createEvent,
     listOfAnEvent,
     getEventById,
     deleteAnEvent,
-    updateAnEvent
+    updateAnEvent,
+    postEmailsToMembers
 }
