@@ -182,17 +182,22 @@ const updateAnEvent = async (eventId, eventBody) => {
 const postEmailsToMembers = async (eventId, eventBody) => {
     try {
         const memberList = await getGroupList(eventId.toString());
+        let emailSubject = '';
         // Initialize an empty array for the emails
         let emailArray = [];
         // Loop through each group and push the emails to the new array
         Object.keys(memberList.data).forEach(group => {
             memberList.data[group].forEach(item => {
+                emailSubject = item.event.name;
                 if (item.groupMember && item.groupMember.member) {
                     emailArray.push(item.groupMember.member.email);
                 }
             });
         });
-        // emailServiceV1(emailArray[0], eventBody)
+
+        console.log('emailSubject--', emailSubject);
+
+        // emailServiceV1(emailArray[0], eventBody,emailSubject)
         return {
             message: messages.emailSend,
             status: statusCodeConstant.OK,

@@ -97,13 +97,13 @@ export const emailContent = (memberList) => {
     return html;
 };
 
-export const emailServiceV1 = async (recipientEmail, content) => {
+export const emailServiceV1 = async (recipientEmail, content, emailSubject) => {
     // Email options
     const mailOptions = {
         from: process.env.SENDER_EMAIL, // Sender's email address
         to: recipientEmail, // ["shantitest3@gmail.com"] Recipient's email address
-        subject: 'Test Email',
-        text: 'This is a test email sent using Node.js and Nodemailer.',
+        subject: emailSubject,
+        // text: 'This is a test email sent using Node.js and Nodemailer.',
         // You can also include HTML content using the `html` property
         html: content
     };
