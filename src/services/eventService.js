@@ -192,7 +192,7 @@ const postEmailsToMembers = async (eventId, eventBody) => {
                 }
             });
         });
-        emailServiceV1(emailArray, eventBody)
+        // emailServiceV1(emailArray[0], eventBody)
         return {
             message: messages.emailSend,
             status: statusCodeConstant.OK,
