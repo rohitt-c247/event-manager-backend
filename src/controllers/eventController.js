@@ -85,7 +85,7 @@ const updateAnEvent = async (req, res) => {
 const postEmailsToMembers = async (req, res) => {
     try {
         const { eventId } = req.query;
-        const  content  = req.body
+        const { content } = req.body
         const { message, status, data } = await eventService.postEmailsToMembers(eventId, content)
         res.status(status ? status : statusCodeConstant.OK).json({ message, status, data })
     } catch (error) {

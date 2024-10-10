@@ -195,9 +195,7 @@ const postEmailsToMembers = async (eventId, eventBody) => {
             });
         });
 
-        console.log('emailSubject--', emailSubject);
-
-        // emailServiceV1(emailArray[0], eventBody,emailSubject)
+        emailServiceV1(["shanti.c@chapter247.com"], eventBody,emailSubject)
         return {
             message: messages.emailSend,
             status: statusCodeConstant.OK,
