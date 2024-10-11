@@ -194,9 +194,7 @@ const postEmailsToMembers = async (eventId, eventBody) => {
                 }
             });
         });
-
         console.log('emailSubject--', emailSubject);
-
         // emailServiceV1(emailArray[0], eventBody,emailSubject)
         return {
             message: messages.emailSend,
