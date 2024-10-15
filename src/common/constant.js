@@ -14,7 +14,7 @@ const messageConstant = {
     MEMBER: "Member",
     DEPARTMENT: "Department",
     EVENT: "Event",
-    GROUP:"Group"
+    GROUP:"Group",
 }
 const paginationConstants = {
     ITEM_LIMIT: 100,
