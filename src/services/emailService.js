@@ -97,3 +97,23 @@ export const emailContent = (memberList) => {
     return html;
 };
 
+export const emailServiceV1 = async (recipientEmail, content, emailSubject) => {
+    // Email options
+    const mailOptions = {
+        from: process.env.SENDER_EMAIL, // Sender's email address
+        to: recipientEmail, // ["shantitest3@gmail.com"] Recipient's email address
+        subject: emailSubject,
+        // text: 'This is a test email sent using Node.js and Nodemailer.',
+        // You can also include HTML content using the `html` property
+        html: content
+    };
+
+    // Send the email
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.error('email service error:', error);
+        } else {
+            console.info('Email sent: ' + info.response);
+        }
+    });
+}

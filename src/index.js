@@ -24,7 +24,7 @@ databaseConnection()
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
+app.use(express.text({ type: 'text/html' }));
 /**
  * Using the app to use our all routes
  */
