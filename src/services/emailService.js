@@ -9,18 +9,17 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-export const emailService = async (recipientEmail, memberList) => {
-    const emailDetails = await emailContent(memberList);
+export const emailService = async (recipientEmail, memberList, eventName) => {
+    const emailDetails = await emailContent(memberList, eventName);
     // Email options
     const mailOptions = {
         from: process.env.SENDER_EMAIL, // Sender's email address
         to: recipientEmail, // ["shantitest3@gmail.com"] Recipient's email address
-        subject: 'Test Email',
+        subject: eventName,
         text: 'This is a test email sent using Node.js and Nodemailer.',
         // You can also include HTML content using the `html` property
         html: emailDetails
     };
-
     // Send the email
     transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
@@ -32,7 +31,7 @@ export const emailService = async (recipientEmail, memberList) => {
 }
 
 
-export const emailContent = (memberList) => {
+export const emailContent = (memberList, eventName) => {
     const groupData = memberList;
     // Start building the HTML content
     let html = `
@@ -41,7 +40,7 @@ export const emailContent = (memberList) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Dynamic Group Members Table</title>
+        <title>${eventName}</title>
         <style>
             table {
                 width: 100%;
@@ -65,7 +64,7 @@ export const emailContent = (memberList) => {
         </style>
     </head>
     <body>
-        <h2>Combined Group Members Table</h2>
+        <h2>${eventName}</h2>
         <table id="group-members-table">
             <thead>
                 <tr>
@@ -79,7 +78,7 @@ export const emailContent = (memberList) => {
     for (let groupName in groupData) {
         if (groupData.hasOwnProperty(groupName)) {
             // Concatenate member names into a single string
-            const memberNames = groupData[groupName].map(memberData => memberData.groupMember.member.name).join('<br>'); // Each member on a new line
+            const memberNames = groupData[groupName].map(memberData => memberData.groupMember?.member?.name).join('<br>'); // Each member on a new line
             html += `
             <tr>
                 <td>${groupName}</td>

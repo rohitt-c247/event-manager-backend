@@ -16,11 +16,18 @@ function distributeIntoGroups(members, numGroups) {
     const groups = [];
     const totalMembers = members.length;
 
-    // Special condition: if there are 4 members but the numGroups is greater than 2, enforce 2 groups
+    // Separate experienced members (assuming experience is stored in 'experience' field)
+    const experiencedMembers = members.filter(member => member.experience > 2); // Adjust experience threshold as needed
+    const nonExperiencedMembers = members.filter(member => member.experience <= 2);
+
+    // Shuffle arrays to ensure randomness
+    shuffleArray(experiencedMembers);
+    shuffleArray(nonExperiencedMembers);
+
+    // Special condition: if there are 4 members but numGroups is greater than 2, enforce 2 groups
     if (totalMembers === 4 && numGroups > 2) {
-        // We can only create 2 groups, first group must have 3 members and the second group has the remaining
-        groups.push(members.slice(0, 3));  // First group of 3 members
-        groups.push(members.slice(3));     // Second group with 1 member
+        // Create 2 groups: first group has 3 members, second group has the remaining
+        groups.push(members.slice(0, 3));
         return groups;
     }
 
@@ -34,27 +41,32 @@ function distributeIntoGroups(members, numGroups) {
 
     let startIndex = 0;
 
+    // Distribute groups while ensuring one experienced member in each group
     for (let i = 0; i < numGroups; i++) {
         let groupSize = minGroupSize;
-        // Distribute the extra members across the first few groups
         if (remainingMembers > 0) {
             groupSize += 1;
             remainingMembers--;
         }
 
-        let group = members.slice(startIndex, startIndex + groupSize);
+        let group = [];
 
-        // If a group has more than 3 members, split it into smaller groups
-        while (group.length > 3) {
-            groups.push(group.slice(0, 3)); // Add group of 3 members
-            group = group.slice(3); // Remaining members go into the next group
+        // Ensure at least one experienced member in each group
+        if (experiencedMembers.length > 0) {
+            group.push(experiencedMembers.pop()); // Add one experienced member to each group
         }
 
-        if (group.length > 0) {
-            groups.push(group);
+        // Add non-experienced members to fill the rest of the group
+        while (group.length < groupSize && nonExperiencedMembers.length > 0) {
+            group.push(nonExperiencedMembers.pop());
         }
 
-        startIndex += groupSize;
+        // If the group is underfilled, distribute remaining experienced members
+        if (group.length < groupSize && experiencedMembers.length > 0) {
+            group.push(experiencedMembers.pop());
+        }
+
+        groups.push(group);
     }
 
     // Check if there are any unassigned members left
@@ -80,9 +92,9 @@ export const saveGroups = async (data) => {
         const { name, userId, eventId } = data;
         /** Step 1: List of members  */
         const members = await memberService.getMemberList();
-        /**  Step 2: Shuffle members randomly */
+        // /**  Step 2: Shuffle members randomly */
         const shuffledMembers = shuffleArray([...members]);
-        /** Create distribute members into groups */
+        // /** Create distribute members into groups */
         const numGroups = data.numberOfGroup;
         groups = distributeIntoGroups(shuffledMembers, numGroups);
         /** step 4: store members  by create group  */
@@ -125,7 +137,7 @@ export const saveGroups = async (data) => {
         })
         const memberList = await getGroupList(eventId.toString());
         /** send mail to the group members */
-        // emailService(memberEmails, memberList.data)
+        // emailService(memberEmails, memberList.data,name)
         return messages.itemAddedSuccess;
     }
     catch (error) {
@@ -232,7 +244,7 @@ export const getGroupList = async (eventId) => {
                         createdAt: 1,
                         updatedAt: 1,
                         event: { name: 1, description: 1, numberOfGroup: 1, date: 1 }, // Fields from event schema as user
-                        userId: { name: 1, email: 1, position: 1, department: 1, experience: 1, isLoginAccess: 1 }, // Fields from Member schema
+                        userId: { name: 1, email: 1, position: 1, department: 1, experience: 1, isLoginAccess: 1, rating: 1 }, // Fields from Member schema
                         group: { name: 1, _id: 1 }, // Fields from Group schema
                         groupMember: {
                             _id: 1,
@@ -243,7 +255,8 @@ export const getGroupList = async (eventId) => {
                                 email: 1,
                                 position: 1,
                                 department: 1,
-                                experience: 1
+                                experience: 1,
+                                rating: 1
                             }
                         }
                     }

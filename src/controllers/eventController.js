@@ -7,8 +7,8 @@ import { eventService } from "../services/index.js"
  */
 const createEvent = async (req, res) => {
     try {
-        const { message, status } = await eventService.createEvent(req.body)
-        res.status(status ? status : statusCodeConstant.OK).json({ message, status })
+        const { message, status, id } = await eventService.createEvent(req.body)
+        res.status(status ? status : statusCodeConstant.OK).json({ message, status, id })
     } catch (error) {
         console.error("calling error", error)
         res.status(typeof error.status === "number" ? error.status : statusCodeConstant.INTERNAL_SERVER_ERROR).json({ error: error.message, status: error.status })

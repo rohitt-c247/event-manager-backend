@@ -26,7 +26,8 @@ const createEvent = async (eventBody) => {
 
         return {
             message: messages.itemAddedSuccess.replace("Item", messageConstant.EVENT),
-            status: statusCodeConstant.CREATED
+            status: statusCodeConstant.CREATED,
+            id: eventDoc._id.toHexString()
         }
     }
     catch (error) {
