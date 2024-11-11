@@ -5,7 +5,8 @@ export const eventCreateValidationSchema = Joi.object({
     description: Joi.string().allow(null || "").optional(),
     date: Joi.date().required(),
     numberOfGroup: Joi.number().min(1).allow(null).default(1),
-    userId:Joi.string().optional()
+    userId: Joi.string().optional(),
+    selectedMemberList: Joi.array().allow(null).optional()
 });
 
 export const eventUpdateValidationSchema = Joi.object({
@@ -13,6 +14,6 @@ export const eventUpdateValidationSchema = Joi.object({
     description: Joi.string().trim().optional(),
     date: Joi.date().optional(),
     numberOfGroup: Joi.number().allow(null).optional(),
-    userId:Joi.string().optional()
+    userId: Joi.string().optional()
 
 })

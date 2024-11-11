@@ -378,9 +378,16 @@ const authMemberList = async (_limit, _page, sortBy, sortOrder, search) => {
 };
 
 
-const getMemberList = async (memberId) => {
+const getMemberList = async (membersEmail) => {
     try {
-        const members = await memberModel.find({})
+        let members = [];
+        members = await memberModel.aggregate([
+            {
+                $match: membersEmail && membersEmail.length > 0
+                    ? { email: { $in: membersEmail } }
+                    : {} // Matches all documents if `memberIds` is not provided or empty
+            }
+        ]);
         return members;
     }
     catch (error) {
