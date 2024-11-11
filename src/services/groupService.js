@@ -89,9 +89,10 @@ export const saveGroups = async (data) => {
     try {
         let memberEmails = [];
         let groups = [];
-        const { name, userId, eventId } = data;
+        let members = [];
+        const { name, userId, eventId, selectedMemberList } = data;
         /** Step 1: List of members  */
-        const members = await memberService.getMemberList();
+        members = await memberService.getMemberList(selectedMemberList);
         // /**  Step 2: Shuffle members randomly */
         const shuffledMembers = shuffleArray([...members]);
         // /** Create distribute members into groups */
