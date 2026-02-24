@@ -3,6 +3,7 @@ import memberRoute from "./memberRoute.js";
 import departmentRoute from "./departmentRoute.js";
 import eventRoute from "./eventRoute.js";
 import positionRoute from "./positionRoute.js";
+import authRoute from "./authRoute.js";
 import groupsRoute from "./groupRoute.js";
 
 const router = express.Router();
@@ -12,5 +13,7 @@ router.use("/department", departmentRoute);
 router.use("/event", eventRoute);
 router.use("/position", positionRoute);
 router.use('/group', groupsRoute)
+router.use("/auth", authRoute);
+
 
 export default router;
