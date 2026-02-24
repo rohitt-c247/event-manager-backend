@@ -9,7 +9,8 @@ const router = express.Router();
 router.post('/', joiValidate(eventCreateValidationSchema), eventController.createEvent);
 router.get('/', eventController.listOfAnEvent);
 router.get('/:id', eventController.getEventById);
-router.delete('/:id',joiParamValidate(paramsValidationSchema), eventController.deleteAnEvent);
+router.delete('/:id', joiParamValidate(paramsValidationSchema), eventController.deleteAnEvent);
 router.put('/:id', joiValidate(eventUpdateValidationSchema), eventController.updateAnEvent);
+router.post('/send-email', eventController.postEmailsToMembers)
 
 export default router

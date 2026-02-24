@@ -6,7 +6,9 @@ export const memberCreateValidationSchema = Joi.object({
     position: Joi.string().trim().required(),
     department: Joi.string().trim().required(),
     experience: Joi.number().min(0).allow(null).default(0),
-    isLoginAccess: Joi.boolean().default(false)
+    isLoginAccess: Joi.boolean().default(false),
+    rating: Joi.number().min(0).allow(null).default(0),
+
 });
 
 export const memberUpdateValidationSchema = Joi.object({
@@ -15,5 +17,6 @@ export const memberUpdateValidationSchema = Joi.object({
     position: Joi.string().trim().allow('').default(''),
     department: Joi.string().trim().allow('').default(''),
     experience: Joi.number().min(0).allow(null).default(null),
-    isLoginAccess: Joi.boolean().default(false)
+    isLoginAccess: Joi.boolean().default(false),
+    rating: Joi.number().min(0).allow(null).default(0),
 });

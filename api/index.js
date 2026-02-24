@@ -30,6 +30,7 @@ app.get('/', (req, res) => {
     res.end(`Hello! Go to item:`);
 });
 
+app.use(express.text({ type: 'text/html' }));
 /**
  * Using the app to use our all routes
  */
@@ -60,5 +61,5 @@ app.use((err, req, res, next) => {
  * that is defined in the .env file
  */
 app.listen(PORT, () => {
-    return console.log(`${messages.serverRunningString} ${PORT}`);
+    return console.info(`${messages.serverRunningString} ${PORT}`);
 });

@@ -17,7 +17,6 @@ const verifyMemberLogin = async (auth) => {
     try {
         // Getting code from the frontend
         const { code } = auth;
-        console.log("code", code)
         const oauth2Client = new google.auth.OAuth2(
             GOOGLE_CLIENT_ID,
             GOOGLE_SECRET_ID,
@@ -62,7 +61,7 @@ const verifyMemberLogin = async (auth) => {
             }
         }
     } catch (error) {
-        console.log("Error while login++++++++++", error)
+        console.error("Error while login++++++++++", error)
         throw errorHandler(error)
     }
 }
@@ -73,7 +72,7 @@ const verifyMemberLogin = async (auth) => {
  */
 const addTeamMembers = async (memberBody) => {
     try {
-        const { name, email, position, department, experience, isLoginAccess } = memberBody
+        const { name, email, position, department, experience, isLoginAccess, rating } = memberBody
         /** check if update already exist email */
         if (memberBody.email != null) {
             if (await memberModel.findOne({ email: memberBody.email }) != null) {
@@ -89,7 +88,8 @@ const addTeamMembers = async (memberBody) => {
             position,
             department,
             experience,
-            isLoginAccess
+            isLoginAccess,
+            rating
         });
         return {
             message: messages.itemAddedSuccess.replace("Item", messageConstant.MEMBER),
@@ -136,10 +136,10 @@ const getMembers = async (_limit, _page, sortBy, sortOrder, search, department, 
             sort[sortBy] = sortOrder === sortingConstant.ASC ? 1 : -1;
         } else {
             // Default sorting if no sortBy and sortOrder provided
-            sort = { createdAt: 1 };
+            sort = { createdAt: -1 };
         }
         const totalItems = await memberModel.countDocuments() // get the total counts od members
-        const getMembers = await memberModel.find(filter, { name: 1, email: 1, position: 1, department: 1, experience: 1, isLoginAccess: 1 }).skip(offset)
+        const getMembers = await memberModel.find(filter, { name: 1, email: 1, position: 1, department: 1, experience: 1, isLoginAccess: 1, rating: 1 }).skip(offset)
             .limit(limit).sort(sort)
 
         if (getMembers.length === 0) {
@@ -174,7 +174,7 @@ const getMembers = async (_limit, _page, sortBy, sortOrder, search, department, 
  */
 const getMemberById = async (memberId) => {
     try {
-        const getMember = await memberModel.findOne({ _id: memberId }, { name: 1, email: 1, department: 1, position: 1, experience: 1, isLoginAccess: 1, picture: 1 })
+        const getMember = await memberModel.findOne({ _id: memberId }, { name: 1, email: 1, department: 1, position: 1, experience: 1, isLoginAccess: 1, picture: 1, rating: 1 })
         if (getMember === null || getMember === undefined) {
             return {
                 message: messages.itemListNotFound.replace("Item list", messageConstant.MEMBER),
@@ -200,9 +200,7 @@ const getMemberById = async (memberId) => {
  */
 const updateMember = async (memberId, memberBody) => {
     try {
-        console.log('kkk', memberBody);
-
-        const { name, email, department, position, experience, isLoginAccess } = memberBody
+        const { name, email, department, position, experience, isLoginAccess, rating } = memberBody
         const findMember = await memberModel.findOne({ _id: memberId })
         if (findMember === null || findMember === undefined) {
             return {
@@ -219,7 +217,7 @@ const updateMember = async (memberId, memberBody) => {
                 };
             }
         }
-        await memberModel.findOneAndUpdate({ _id: memberId }, { $set: { name, email, department, position, experience, isLoginAccess } })
+        await memberModel.findOneAndUpdate({ _id: memberId }, { $set: { name, email, department, position, experience, isLoginAccess, rating } })
         return {
             message: messages.itemUpdatedSuccess.replace("Item", messageConstant.MEMBER),
             status: statusCodeConstant.OK
@@ -239,7 +237,6 @@ const updateMember = async (memberId, memberBody) => {
  */
 const deleteMember = async (memberId) => {
     try {
-        console.log("calling delete", memberId)
         const getMember = await memberModel.findOne({ _id: memberId })
         if (getMember === null || getMember === undefined) {
             return {
@@ -343,6 +340,7 @@ const authMemberList = async (_limit, _page, sortBy, sortOrder, search) => {
                     department: 1,
                     experience: 1,
                     isLoginAccess: 1,
+                    rating: 1
                 }
             },
             { $sort: sort }, // Apply sorting
@@ -382,7 +380,6 @@ const authMemberList = async (_limit, _page, sortBy, sortOrder, search) => {
 
 const getMemberList = async (memberId) => {
     try {
-        console.log("calling delete", memberId)
         const members = await memberModel.find({})
         return members;
     }

@@ -7,9 +7,10 @@ import departmentModel from "../models/departmentModel.js";
  */
 const addDepartment = async (departmentBody) => {
     try {
-        const { name } = departmentBody
+        const { name,createdBy } = departmentBody
         await departmentModel.create({
             name,
+            createdBy
         })
         return {
             message: messages.itemAddedSuccess.replace("Item", messageConstant.DEPARTMENT),
