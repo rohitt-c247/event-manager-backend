@@ -18,7 +18,11 @@ const messages = {
     itemUpdatedSuccess: "Item updated successfully!",
     itemDeletedSuccess: "Item deleted successfully!",
     invalidRequest: "Invalid request!",
-    alreadyExist:"Email is already exists"
+    alreadyExist:"Email is already exists",
+    userRegisterSuccess: "User has been registered successfully",
+    loginSuccess: "Login successfully!",
+    invalidCredentials: "Invalid email or password",
+    userNotFound: "User not found",
 };
 
 export { messages };
