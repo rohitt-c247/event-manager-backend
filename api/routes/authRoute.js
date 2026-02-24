@@ -7,7 +7,7 @@ import { joiValidate } from "../middlewares/joiValidate.js";
 const router = express.Router();
 
 router.post(
-  "/",
+  "/register",
   joiValidate(userCreateValidationSchema),
   handleValidationErrors,
   authController.registerUser,
