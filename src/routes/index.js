@@ -4,6 +4,7 @@ import departmentRoute from "./departmentRoute.js";
 import eventRoute from "./eventRoute.js";
 import positionRoute from "./positionRoute.js";
 import groupsRoute from "./groupRoute.js";
+import authRoute from "./authRoute.js";
 
 const router = express.Router();
 
@@ -12,5 +13,6 @@ router.use("/department", departmentRoute);
 router.use("/event", eventRoute);
 router.use("/position", positionRoute);
 router.use('/group', groupsRoute)
+router.use("/auth", authRoute);
 
 export default router;

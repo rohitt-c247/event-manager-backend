@@ -13,6 +13,8 @@ const FRONT_APP_LOCAL_URL = process.env.FRONT_APP_LOCAL_URL;
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
 const GOOGLE_SECRET_ID = process.env.GOOGLE_SECRET_ID || '';
 const ORGANIZATION_DOMAIN = process.env.ORGANIZATION_DOMAIN;
+const NODE_ENV= process.env.NODE_ENV
+const JWT_SECRET = process.env.JWT_SECRET || 'event_manager';
 
 
 let FRONT_APP_URL
@@ -28,5 +30,7 @@ export {
     GOOGLE_CLIENT_ID,
     GOOGLE_SECRET_ID,
     FRONT_APP_LOCAL_URL,
-    ORGANIZATION_DOMAIN
+    ORGANIZATION_DOMAIN,
+    NODE_ENV,
+    JWT_SECRET
 }

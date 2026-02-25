@@ -21,7 +21,11 @@ const messages = {
     alreadyExist: "Email is already exists",
     groupFetchSuccess: "Fetch event details successfully!",
     deleteGroup: "Group deleted successfully",
-    emailSend:"Email send successfully!"
+    emailSend:"Email send successfully!",
+    userRegisterSuccess: "User has been registered successfully",
+    loginSuccess: "Login successfully!",
+    invalidCredentials: "Invalid email or password",
+    userNotFound: "User not found",
 };
 
 export { messages };

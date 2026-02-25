@@ -29,6 +29,21 @@ app.use(express.text({ type: 'text/html' }));
  * Using the app to use our all routes
  */
 app.use('/', router)
+app.use((err, req, res, next) => {
+    const status = err.status || statusCodeConstant.INTERNAL_SERVER_ERROR;
+    const message = err.message || messages.somethingWentWrong;
+    
+    // Log error in development
+    if (process.env.NODE_ENV !== 'production') {
+        console.error('Global Error Handler:', err);
+    }
+
+    // Return JSON response instead of HTML
+    res.status(status).json({
+        success: false,
+        message: message,
+    });
+});
 
 /**
  * Creating the server using express on the Specific code 
